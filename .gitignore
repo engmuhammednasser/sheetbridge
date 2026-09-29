@@ -2,6 +2,7 @@
 dist/*
 !dist/sheetbridge-*.zip
 !dist/SheetBridge-User-Guide-AR-EN.html
+!dist/customer-journey-ar.html
 !dist/SHA256SUMS.txt
 artifacts/qa/
 *.log

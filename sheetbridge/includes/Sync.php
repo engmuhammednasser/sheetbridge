@@ -10,6 +10,10 @@ final class Sync
             throw new Problem('inbound_paused', 'Incoming changes are paused. Resume them in SheetBridge settings.', 409);
         }
         $request = Validation::request($input, $settings);
+        // A retry must not retain access after the owner removes a product from scope.
+        if ($request['action'] === 'update') {
+            Settings::assertScope($request['product_id']);
+        }
         $hash = hash('sha256', wp_json_encode($request));
         $existing = Storage::byKey($request['request_id']);
         if ($existing) {

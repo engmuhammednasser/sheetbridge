@@ -6,17 +6,18 @@ Manage WooCommerce products through Google Sheets, with a before/after review in
 
 This is the development repository for **SheetBridge for WooCommerce**, an independent implementation for one store. The project was migrated from `engmuhammednasser/flexstock` with its Git history preserved. It does not require FlexStock or contain its plugin code. The [original Arabic research](flexstock-woocommerce-google-sheets-report-ar.md) is included as background.
 
-**Version 1.1.0 — ready for staging evaluation.** Local tests passed; live Google authorization, scheduled triggers, and compatibility with your store's extensions still require the [staging acceptance checklist](docs/testing.md#staging-acceptance-before-deployment). See the [validation record](VALIDATION.md) for what was actually tested.
+**Version 1.1.1.** Includes an Arabic customer walkthrough and a fix that rechecks product scope before returning a saved proposal on retry. Live Google authorization and a manual synchronization cycle were verified with connector 1.1.0; store-specific extensions and future scheduled execution still need acceptance checks. See the [validation record](VALIDATION.md) and [security review](docs/security-review-2026-09-29.md).
 
 ## Downloads
 
 | File | Use |
 |---|---|
-| [Installable plugin ZIP](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/sheetbridge-1.1.0.zip) | Upload this file in WordPress |
+| [Installable plugin ZIP](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/sheetbridge-1.1.1.zip) | Upload this file in WordPress |
+| [Arabic customer walkthrough](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/customer-journey-ar.html) | Setup, where to find every required value, first approval, daily use and troubleshooting |
 | [Arabic / English user guide](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/SheetBridge-User-Guide-AR-EN.html) | Save the HTML file, then open it in your browser; switch languages or print |
 | [SHA-256 checksum](dist/SHA256SUMS.txt) | Verify the plugin download |
 
-GitHub's **Code → Download ZIP** downloads the complete development repository. For installation, use **sheetbridge-1.1.0.zip** from the link above.
+GitHub's **Code → Download ZIP** downloads the complete development repository. For installation, use **sheetbridge-1.1.1.zip** from the link above. Save both HTML guides together for their cross-links to work offline.
 
 ## Install
 
@@ -92,6 +93,7 @@ Integration and concurrency tests require the isolated test installation describ
 
 ```powershell
 php tests/integration.php
+php tests/security.php
 php tests/concurrency.php
 ```
 
@@ -102,6 +104,8 @@ No runtime npm or Composer dependencies, telemetry, licensing callbacks or remot
 ## Documentation and license
 
 - [Beginner guide source](sheetbridge/docs/user-guide.html) — bilingual offline HTML, also included in the plugin.
+- [Arabic customer journey](sheetbridge/docs/customer-journey-ar.html) — each step and the source of values obtained outside WordPress.
+- [Security review, 29 September 2026](docs/security-review-2026-09-29.md) — evidence, fix and test boundaries.
 - [Architecture and security boundaries](docs/architecture.md).
 - [Local tests and staging acceptance](docs/testing.md).
 - [Validation results and remaining limitations](VALIDATION.md).

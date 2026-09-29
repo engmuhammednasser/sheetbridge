@@ -2,7 +2,7 @@
 Contributors: sheetbridge
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 Tested up to: 7.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -23,6 +23,7 @@ Requires WooCommerce 9.0+, HTTPS, PHP 8.1+, and InnoDB database tables. Recent W
 6. Test one product on staging before production use.
 
 The complete Arabic/English guide is linked inside SheetBridge and bundled at docs/user-guide.html.
+The Arabic customer walkthrough at docs/customer-journey-ar.html explains every setup value and its source, Google authorization, first approval, and recovery.
 
 == Privacy and external services ==
 The optional Google connector uses Google Sheets and Google Apps Script under your own Google account. It sends your configured product proposals to your store and reads scoped catalog data into your spreadsheet. Google authorization and Google's terms apply. Keep the script project private. No plugin telemetry or developer-operated relay service is used.
@@ -35,6 +36,9 @@ Update checks retrieve a public release manifest from raw.githubusercontent.com/
 Single store, human approval required, no deletion or remote image fetching. Whole-unit stock on independently managed simple products/variations. Complex third-party product types, ACF structures, multi-store inventory and vendor isolation are outside this release. Validate hosting, cache, Google authorization and extension compatibility on staging.
 
 == Changelog ==
+= 1.1.1 =
+Recheck product scope before returning an existing preview on retries. Include a detailed Arabic customer walkthrough and expanded security regression coverage. Connector 1.1.0 remains compatible; no script replacement or key rotation is needed.
+
 = 1.1.0 =
 Native WordPress View details, manual update checks, stable GitHub release updates and SHA-256 package verification. Optional WordPress automatic updates remain under the administrator's control. Connector protocol compatibility avoids script replacement for future compatible plugin updates after a one-time upgrade to connector 1.1.0.
 

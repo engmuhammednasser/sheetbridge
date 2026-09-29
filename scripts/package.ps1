@@ -24,6 +24,9 @@ try {
     } finally { $zip.Dispose() }
 } finally { $stream.Dispose() }
 Copy-Item -LiteralPath (Join-Path $source 'docs\user-guide.html') -Destination (Join-Path $output 'SheetBridge-User-Guide-AR-EN.html') -Force
+$journey = Get-Content -LiteralPath (Join-Path $source 'docs\customer-journey-ar.html') -Raw -Encoding UTF8
+$journey = $journey.Replace('href="user-guide.html#ar-fields"', 'href="SheetBridge-User-Guide-AR-EN.html#ar-fields"')
+[System.IO.File]::WriteAllText((Join-Path $output 'customer-journey-ar.html'), $journey, [System.Text.UTF8Encoding]::new($false))
 $zip = [System.IO.Compression.ZipFile]::OpenRead($archive)
 try {
     $names = @($zip.Entries | ForEach-Object { $_.FullName })

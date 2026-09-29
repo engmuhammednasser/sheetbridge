@@ -21,11 +21,16 @@ php tests/unit.php
 node tests/connector.test.cjs
 php tests/integration.php
 php tests/concurrency.php
+php tests/security.php
 powershell -ExecutionPolicy Bypass -File scripts/validate.ps1
 powershell -ExecutionPolicy Bypass -File scripts/package.ps1
 ```
 
 There is no Composer/npm runtime dependency or production compilation step. PHP lint, JavaScript parsing, behavior tests and archive inspection are the applicable build gates. See `VALIDATION.md` for actual outcomes and tool availability limits.
+
+Run integration, security and concurrency suites sequentially: they change the same isolated database settings. `tests/security.php` covers actual REST permission callbacks for anonymous callers, connector keys, subscribers, shop managers and administrators, as well as nonces, revoked scope, token lifecycle and hostile payloads. Its JSON result is saved under ignored `artifacts/qa/`.
+
+For an explicitly authorized real store, `node tests/live-read-only.cjs https://your-store.example` sends seven small anonymous GET requests only and records denial statuses without printing response bodies. It never sends write requests or real credentials. This limited check is not a whole-site penetration test.
 
 ## Staging acceptance before deployment
 

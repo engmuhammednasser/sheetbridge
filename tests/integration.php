@@ -64,6 +64,7 @@ fails(fn() => $sync->apply($job['id']), 'field_forbidden');
 update_option('sheetbridge_settings', $settings, false);
 $limited = $settings; $limited['product_ids'] = [$id + 100000]; update_option('sheetbridge_settings', $limited, false);
 fails(fn() => $sync->preview(proposal($id, ['name' => 'Forbidden'])) , 'outside_scope');
+fails(fn() => $sync->preview($input), 'outside_scope');
 update_option('sheetbridge_settings', $settings, false);
 $limited = $settings; $limited['inbound_paused'] = true; update_option('sheetbridge_settings', $limited, false);
 fails(fn() => $sync->preview(proposal($id, ['name' => 'Paused'])), 'inbound_paused');

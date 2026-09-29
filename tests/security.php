@@ -1,0 +1,102 @@
+<?php
+/** Mutating security checks: isolated local fixture only. Never run on a real store. */
+$_SERVER['HTTP_HOST'] = '127.0.0.1:18765';
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+$_SERVER['HTTPS'] = 'on';
+require dirname(__DIR__) . '/.runtime/wordpress/wp-load.php';
+use SheetBridge\{Settings, Products, Storage, Validation};
+if (wp_get_environment_type() !== 'local' || DB_NAME !== 'sheetbridge_test') throw new RuntimeException('Isolated test database required.');
+$results = [];
+function secCheck(bool $passed, string $name): void { global $results; $results[] = compact('name', 'passed'); echo ($passed ? 'PASS ' : 'FAIL ') . $name . "\n"; }
+function secRequest(string $method, string $route, mixed $body = null, ?string $token = null, bool $nonce = false): WP_REST_Response {
+    $request = new WP_REST_Request($method, '/sheetbridge/v1/' . $route);
+    if ($token !== null) $request->set_header('X-SheetBridge-Token', $token);
+    if ($nonce) $request->set_header('X-WP-Nonce', wp_create_nonce('wp_rest'));
+    if ($body !== null) { $request->set_header('Content-Type', 'application/json'); $request->set_body(is_string($body) ? $body : wp_json_encode($body)); }
+    return rest_do_request($request);
+}
+$run = bin2hex(random_bytes(5));
+$admin = get_user_by('login', 'sb_local_admin')->ID;
+$subscriber = wp_insert_user(['user_login'=>'sec_sub_'.$run,'user_pass'=>wp_generate_password(48),'role'=>'subscriber']);
+$manager = wp_insert_user(['user_login'=>'sec_manager_'.$run,'user_pass'=>wp_generate_password(48),'role'=>'shop_manager']);
+if (is_wp_error($subscriber) || is_wp_error($manager)) throw new RuntimeException('Could not create isolated role fixtures.');
+$oldSettings = get_option('sheetbridge_settings');
+$oldConnection = get_option('sheetbridge_connection');
+$settings = Settings::defaults(); $settings['fields'] = Validation::fields();
+update_option('sheetbridge_settings', $settings, false);
+$product = new WC_Product_Simple(); $product->set_name('Security fixture '.$run); $product->set_status('draft'); $product->set_regular_price('100'); $product->save();
+$second = new WC_Product_Simple(); $second->set_name('Other scope '.$run); $second->set_status('draft'); $second->set_regular_price('200'); $second->save();
+$id = $product->get_id();
+$payload = ['request_id'=>'security_'.$run.'_preview','action'=>'update','product_id'=>$id,'revision'=>Products::snapshot(Products::fresh($id))['revision'],'changes'=>['regular_price'=>'125']];
+do_action('rest_api_init');
+try {
+    wp_set_current_user($admin);
+    $token = Settings::rotate();
+    $connection = get_option('sheetbridge_connection');
+    secCheck($connection['hash'] === hash('sha256', $token) && !str_contains(wp_json_encode($connection), $token), 'only token hash is stored in WordPress');
+    secCheck(abs($connection['expires'] - time() - 90 * DAY_IN_SECONDS) < 5, 'credential lifetime is 90 days');
+    wp_set_current_user(0);
+    foreach (['health', 'catalog', 'references'] as $route) secCheck(secRequest('GET',$route)->get_status() === 401, 'anonymous '.$route.' denied');
+    foreach (['',str_repeat('0',64),'../../secrets',str_repeat('a',5000)] as $bad) secCheck(secRequest('GET','health',null,$bad)->get_status() === 401, 'invalid key rejected (length '.strlen($bad).')');
+    $health = secRequest('GET','health',null,$token);
+    secCheck($health->get_status() === 200 && !str_contains(wp_json_encode($health->get_data()),$token) && !str_contains(wp_json_encode($health->get_data()),$connection['hash']), 'valid health response contains no credential or hash');
+    $created = secRequest('POST','changes',$payload,$token);
+    secCheck($created->get_status() === 200 && $created->get_data()['state'] === 'pending', 'connector can create a pending preview');
+    secCheck(Products::fresh($id)->get_regular_price('edit') === '100', 'connector preview does not change price');
+    $job = $created->get_data();
+    secCheck(!array_intersect(['payload','before_data','after_data','reviewer'],array_keys($job)), 'connector response excludes private audit snapshots');
+    $adminRoutes = [['GET','admin/dashboard'],['GET','admin/requests'],['GET','admin/requests/'.$job['id']],['POST','admin/requests/'.$job['id'].'/apply'],['POST','admin/requests/'.$job['id'].'/reject'],['POST','admin/requests/'.$job['id'].'/reverse'],['POST','admin/preview'],['POST','admin/settings'],['POST','admin/connection']];
+    foreach ($adminRoutes as [$method,$route]) secCheck(secRequest($method,$route,$method==='POST'?['action'=>'rotate']:null,$token)->get_status()===403,'connector key cannot access '.$route);
+    wp_set_current_user($subscriber);
+    foreach ($adminRoutes as [$method,$route]) secCheck(secRequest($method,$route,$method==='POST'?['action'=>'rotate']:null,null,true)->get_status()===403,'subscriber with nonce denied '.$route);
+    wp_set_current_user($manager);
+    secCheck(secRequest('GET','admin/dashboard',null,null,true)->get_status()===200,'shop manager can review dashboard');
+    foreach (['admin/settings','admin/connection'] as $route) secCheck(secRequest('POST',$route,['action'=>'rotate'],null,true)->get_status()===403,'shop manager cannot manage '.$route);
+    secCheck(get_option('sheetbridge_connection')['hash']===$connection['hash'],'denied credential operations leave connection intact');
+    wp_set_current_user($admin);
+    foreach ($adminRoutes as [$method,$route]) secCheck(secRequest($method,$route,$method==='POST'?['action'=>'rotate']:null)->get_status()===403,'administrator without nonce denied '.$route);
+    $badNonce=new WP_REST_Request('POST','/sheetbridge/v1/admin/settings');$badNonce->set_header('X-WP-Nonce','invalid');$badNonce->set_body('{}');
+    secCheck(rest_do_request($badNonce)->get_status()===403,'forged admin nonce denied');
+    wp_set_current_user(0);
+    foreach (['{invalid','[]','null','"text"'] as $badBody) secCheck(secRequest('POST','changes',$badBody,$token)->get_status()===400,'malformed/objectless JSON rejected: '.$badBody);
+    secCheck(secRequest('POST','changes',['oversized'=>str_repeat('x',262144)],$token)->get_status()===413,'oversized connector body rejected');
+    $bad=$payload;$bad['request_id'].='_sql';$bad['product_id']='1 OR 1=1';
+    secCheck(secRequest('POST','changes',$bad,$token)->get_status()===400,'SQL-like product ID rejected');
+    $bad=$payload;$bad['request_id'].='_meta';$bad['changes']=['meta'=>['_wp_attached_file'=>'../../wp-config.php']];
+    secCheck(secRequest('POST','changes',$bad,$token)->get_status()===403,'protected internal metadata rejected');
+    $bad=$payload;$bad['request_id'].='_url';$bad['changes']=['image_id'=>'http://127.0.0.1/private'];
+    secCheck(secRequest('POST','changes',$bad,$token)->get_status()===400,'remote image URL rejected before any request');
+    $bad=$payload;$bad['changes']['regular_price']='999';
+    secCheck(secRequest('POST','changes',$bad,$token)->get_status()===409,'request ID cannot be reused for changed content');
+    $scoped=$settings;$scoped['product_ids']=[$second->get_id()];update_option('sheetbridge_settings',$scoped,false);
+    $catalog=secRequest('GET','catalog',null,$token)->get_data();
+    secCheck(array_column($catalog['products'],'id')===[$second->get_id()],'catalog obeys current product scope');
+    secCheck(secRequest('GET','changes/'.$payload['request_id'],null,$token)->get_status()===403,'status read denied after product scope is removed');
+    secCheck(secRequest('POST','changes',$payload,$token)->get_status()===403,'idempotent preview denied after product scope is removed');
+    wp_set_current_user($admin);
+    secCheck(secRequest('POST','admin/requests/'.$job['id'].'/apply',[],null,true)->get_status()===403,'approval rechecks changed product scope');
+    secCheck(Products::fresh($id)->get_regular_price('edit')==='100','denied scope approval preserves product');
+    update_option('sheetbridge_settings',$settings,false);
+    wp_set_current_user(0);
+    $_SERVER['HTTPS']='off';$_SERVER['REMOTE_ADDR']='203.0.113.10';
+    secCheck(secRequest('GET','health',null,$token)->get_status()===403,'non-loopback HTTP cannot use local exception');
+    $_SERVER['HTTPS']='on';$_SERVER['REMOTE_ADDR']='127.0.0.1';
+    $expired=$connection;$expired['expires']=time()-1;update_option('sheetbridge_connection',$expired,false);
+    secCheck(secRequest('GET','health',null,$token)->get_status()===401,'expired key denied');
+    $cloned=$connection;$cloned['site_url']='https://different-store.example/';update_option('sheetbridge_connection',$cloned,false);
+    secCheck(secRequest('GET','health',null,$token)->get_status()===401,'key from another site denied');
+    update_option('sheetbridge_connection',$connection,false);Settings::rotate();
+    secCheck(secRequest('GET','health',null,$token)->get_status()===401,'rotating key revokes original key');
+    Settings::revoke();secCheck(empty(get_option('sheetbridge_connection')),'revoke removes active credential');
+    global $wpdb;
+    $bucket='connection-'.(int)floor(time()/60);$wpdb->replace($wpdb->prefix.'sheetbridge_limits',['bucket'=>$bucket,'hits'=>119,'expires'=>time()+120]);
+    secCheck(Storage::rateLimit()&&!Storage::rateLimit(),'120-call authenticated rate limit enforced without flood');
+    $wpdb->update($wpdb->prefix.'sheetbridge_limits',['hits'=>0],['bucket'=>$bucket]);
+} finally {
+    update_option('sheetbridge_settings',$oldSettings,false);update_option('sheetbridge_connection',$oldConnection,false);wp_set_current_user($admin);
+}
+$failed=count(array_filter($results,fn($result)=>!$result['passed']));
+$out=dirname(__DIR__).'/artifacts/qa';if(!is_dir($out))mkdir($out,0777,true);
+file_put_contents($out.'/security-results.json',wp_json_encode(['php'=>PHP_VERSION,'wordpress'=>get_bloginfo('version'),'woocommerce'=>WC_VERSION,'plugin'=>SHEETBRIDGE_VERSION,'checks'=>count($results),'failed'=>$failed,'results'=>$results],JSON_PRETTY_PRINT));
+echo 'Security checks: '.count($results).'; failed: '.$failed."\n";
+exit($failed?1:0);
