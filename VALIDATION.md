@@ -83,3 +83,19 @@ Prepared the initial GitHub import for `engmuhammednasser/flexstock`. Added an A
 ZIP SHA-256: `7a473e483bfdb68ac04dd05f8257a3d63f5efb52424a69e080c692d67f40c5ff`.
 
 The local runtime, databases, WordPress configuration, credentials, dependencies, and logs are excluded from Git. Pattern scanning is a limited pre-publication check, not a comprehensive security audit. Integration, concurrency, browser, and ZIP-installation results above are from the development validation; those suites were not rerun for the documentation/license-only repository preparation. Live Google and production-store acceptance remain outstanding.
+
+## Repository migration — 29 September 2026
+
+Migrated SheetBridge 1.0.0 from `engmuhammednasser/flexstock` at commit `e97d4fcd6e3a16f60c518ee9dd4eeaff1ccbc205` to `engmuhammednasser/sheetbridge`, preserving the original Git history. The working directory is now `D:\sheetbridge`. Updated the English and Arabic README repository descriptions, download links, and clone instructions. Plugin source, connector, and release artifacts were preserved without functional changes.
+
+| Command or check | Actual result |
+|---|---|
+| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1` | PASS: 10 PHP syntax checks, admin JavaScript syntax, 37 domain checks, and 27 connector checks |
+| Existing release ZIP inspection | PASS: 17 unique files, correct plugin root, and contents matching the checked-out source after CRLF/LF normalization |
+| Byte-level ZIP/source comparison | Two files differ only in line endings after Git checkout: `sheetbridge/LICENSE.txt` and `sheetbridge/assets/admin.css`; the other 15 files match byte for byte |
+| Existing release checksum | PASS: `dist/sheetbridge-1.0.0.zip` still matches `dist/SHA256SUMS.txt`; the archive was not rebuilt |
+| Standalone guide and license comparison | PASS: guide matches byte for byte; license content matches after CRLF/LF normalization |
+| Relative Markdown link and README URL checks | PASS: all 30 relative links resolve; download and clone URLs use the new repository |
+| `git diff --check` | PASS for the migration changes |
+
+ZIP SHA-256 remains `7a473e483bfdb68ac04dd05f8257a3d63f5efb52424a69e080c692d67f40c5ff`. The ignored `.runtime` installation is not part of the Git repository and was not copied. Integration, concurrency, browser, live Google, and store-installation tests were not rerun during this migration; earlier results above remain historical validation.

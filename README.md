@@ -4,7 +4,7 @@
 
 Manage WooCommerce products through Google Sheets, with a before/after review in WordPress before changes are applied. Includes an Arabic/English interface, inventory safeguards, and a printable beginner guide.
 
-This repository is named **flexstock**; the plugin it contains is **SheetBridge for WooCommerce**, an independent implementation for one store. It does not require FlexStock or contain its plugin code. The [original Arabic research](flexstock-woocommerce-google-sheets-report-ar.md) is included as background.
+This is the development repository for **SheetBridge for WooCommerce**, an independent implementation for one store. The project was migrated from `engmuhammednasser/flexstock` with its Git history preserved. It does not require FlexStock or contain its plugin code. The [original Arabic research](flexstock-woocommerce-google-sheets-report-ar.md) is included as background.
 
 **Version 1.0.0 — ready for staging evaluation.** Local tests passed; live Google authorization, scheduled triggers, and compatibility with your store's extensions still require the [staging acceptance checklist](docs/testing.md#staging-acceptance-before-deployment). See the [validation record](VALIDATION.md) for what was actually tested.
 
@@ -12,8 +12,8 @@ This repository is named **flexstock**; the plugin it contains is **SheetBridge 
 
 | File | Use |
 |---|---|
-| [Installable plugin ZIP](https://github.com/engmuhammednasser/flexstock/raw/refs/heads/main/dist/sheetbridge-1.0.0.zip) | Upload this file in WordPress |
-| [Arabic / English user guide](https://github.com/engmuhammednasser/flexstock/raw/refs/heads/main/dist/SheetBridge-User-Guide-AR-EN.html) | Save the HTML file, then open it in your browser; switch languages or print |
+| [Installable plugin ZIP](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/sheetbridge-1.0.0.zip) | Upload this file in WordPress |
+| [Arabic / English user guide](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/SheetBridge-User-Guide-AR-EN.html) | Save the HTML file, then open it in your browser; switch languages or print |
 | [SHA-256 checksum](dist/SHA256SUMS.txt) | Verify the plugin download |
 
 GitHub's **Code → Download ZIP** downloads the complete development repository. For installation, use **sheetbridge-1.0.0.zip** from the link above.
@@ -68,8 +68,8 @@ External hooks, emails, webhooks and persistent-cache behavior cannot be rolled 
 ## Validate and package
 
 ```powershell
-git clone https://github.com/engmuhammednasser/flexstock.git
-cd flexstock
+git clone https://github.com/engmuhammednasser/sheetbridge.git
+cd sheetbridge
 powershell -ExecutionPolicy Bypass -File scripts/validate.ps1
 powershell -ExecutionPolicy Bypass -File scripts/package.ps1
 ```
