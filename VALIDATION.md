@@ -143,4 +143,13 @@ Version 1.1.0 adds the WordPress plugin-information modal, bilingual description
 - All 20 deployed files match the published archive byte for byte. Existing settings and connection data remained unchanged; database version is 1.1.0 and connector protocol is 1. Active-plugin membership, other plugin versions and WordPress core 7.0.3 were unchanged.
 - Authenticated read-only dashboard and requests REST checks returned 200; the unauthenticated dashboard check returned 403. The storefront returned HTTP 200. The actual admin overview displayed HTTPS and transactional storage as ready and the footer displayed `by muhammed nasser`.
 - Local screenshots of the details modal, successful update and installed-version row are saved under ignored `artifacts/qa/`; configuration backups and connection data were not committed.
-- No product, stock, price or order test mutations were performed. Live Apps Script code replacement and end-to-end Google synchronization still require access to the owner's script project; plugin update success does not verify that separate workflow.
+- No product, stock, price or order test mutations were performed. The subsequent live Google connector checks are recorded separately below; plugin update success alone does not verify that workflow.
+
+### Live Google connector upgrade
+
+After the owner provided the private Apps Script project, inspected its existing code through the authenticated Chrome editor. It matched the original 1.0.0 connector after newline normalization. Saved a local backup under ignored `artifacts/qa/` and replaced the code with the published 1.1.0 connector. Script properties, manifest, sharing and existing triggers were not changed; `setup` was not rerun.
+
+- A temporary read-only diagnostic completed successfully using the project's existing authorization: connector 1.1.0, plugin 1.1.0, protocol 1, valid Changes headers, zero ready rows, zero submitted rows, 187 existing catalog rows, and both `onSheetEdit` and `syncNow` triggers present.
+- Removed the diagnostic, saved and reloaded the project, then copied the persisted editor content back for comparison. It matches the release connector after newline normalization, with no temporary function remaining.
+- Selected and ran the actual `syncNow` function. Google reported execution started at 13:06:55 and completed at 13:07:16 on 29 September 2026 (the browser's displayed local time). The store recorded fresh connector contact and still had zero SheetBridge requests afterward.
+- Saved local screenshots of the diagnostic and successful cycle. This verifies live Google authorization, protocol compatibility, spreadsheet access and a normal cycle with no queued changes. Product approval/reversal, protection enforcement, quota exhaustion and future scheduled execution were not exercised in this live-store check.
