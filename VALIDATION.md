@@ -108,3 +108,18 @@ Released 1.0.1 with `muhammed nasser` as the WordPress plugin author and `by muh
 - Packaging passed: all 17 files in `dist/sheetbridge-1.0.1.zip` match the source byte for byte; the standalone guide matches the bundled guide.
 - ZIP SHA-256: `08ff3403bd3562f458c07f2337d31cc80a60de83e22a5a3ae33a93a2e8074657`, matching `dist/SHA256SUMS.txt`.
 - `git diff --check` passed. WordPress browser, installation, integration, and live Google checks were not rerun for this attribution change.
+
+## Linux packaging correction and deployment — 29 September 2026
+
+The first Linux installation attempt exposed a packaging defect: Windows `Compress-Archive` stored backslashes in ZIP entry names. WordPress extracted those as literal filenames into a separate directory and left the active 1.0.0 installation unchanged. Earlier archive checks normalized separators before checking the plugin root, so they did not detect this defect.
+
+Updated `scripts/package.ps1` to create explicit forward-slash ZIP entries and reject incorrect roots, backslashes, duplicate entries, and file-count mismatches. Rebuilt the 1.0.1 archive without changing plugin source. The corrected ZIP SHA-256 is `adafbc70a0df6d8200cc4ecf3a8ca5828af67f0a8af2bfb1b3c139575a3e66e1`; this supersedes the earlier 1.0.1 package checksum above.
+
+Deployment checks on PHP 8.2.33, WordPress 7.0.3, and WooCommerce 11.0.1:
+
+- Backed up the previous plugin, SheetBridge options, and both SheetBridge tables outside the public document root. Moved the malformed installation into that private backup.
+- WordPress installed the corrected ZIP successfully and reported SheetBridge 1.0.1 active, with author `muhammed nasser`.
+- All 17 deployed files match the corrected archive byte for byte. Existing settings and connection credentials remained unchanged.
+- Authenticated read-only dashboard and request-list REST checks returned 200; the unauthenticated dashboard check returned 403. Transactional storage passed and the database version is 1.0.1.
+- The storefront, login page, admin JavaScript, and user guide returned HTTP 200. The served assets contain the author credit, and the guide footer was inspected in the browser.
+- No test product, price, stock, or order changes were made. Google end-to-end synchronization remains unverified: the private Apps Script must also use connector version 1.0.1 because the current version check requires an exact match.
