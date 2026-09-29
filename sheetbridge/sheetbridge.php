@@ -1,19 +1,23 @@
 <?php
 /**
  * Plugin Name: SheetBridge for WooCommerce
+ * Plugin URI: https://github.com/engmuhammednasser/sheetbridge
  * Description: Review and synchronize WooCommerce product changes from Google Sheets with explicit approvals and inventory safeguards.
- * Version: 1.0.1
+ * Version: 1.1.0
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * Requires Plugins: woocommerce
  * WC requires at least: 9.0
  * Author: muhammed nasser
+ * Author URI: https://github.com/engmuhammednasser
+ * Update URI: https://github.com/engmuhammednasser/sheetbridge
  * License: GPL-2.0-or-later
  * Text Domain: sheetbridge
  */
 
 defined('ABSPATH') || exit;
-define('SHEETBRIDGE_VERSION', '1.0.1');
+define('SHEETBRIDGE_VERSION', '1.1.0');
+define('SHEETBRIDGE_CONNECTOR_PROTOCOL', 1);
 define('SHEETBRIDGE_FILE', __FILE__);
 define('SHEETBRIDGE_DIR', __DIR__ . '/');
 
@@ -25,6 +29,8 @@ spl_autoload_register(static function (string $class): void {
         }
     }
 });
+
+(new SheetBridge\Updater())->register();
 
 register_activation_hook(__FILE__, [SheetBridge\Storage::class, 'install']);
 add_action('before_woocommerce_init', static function (): void {

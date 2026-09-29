@@ -6,17 +6,17 @@ Manage WooCommerce products through Google Sheets, with a before/after review in
 
 This is the development repository for **SheetBridge for WooCommerce**, an independent implementation for one store. The project was migrated from `engmuhammednasser/flexstock` with its Git history preserved. It does not require FlexStock or contain its plugin code. The [original Arabic research](flexstock-woocommerce-google-sheets-report-ar.md) is included as background.
 
-**Version 1.0.1 — ready for staging evaluation.** Local tests passed; live Google authorization, scheduled triggers, and compatibility with your store's extensions still require the [staging acceptance checklist](docs/testing.md#staging-acceptance-before-deployment). See the [validation record](VALIDATION.md) for what was actually tested.
+**Version 1.1.0 — ready for staging evaluation.** Local tests passed; live Google authorization, scheduled triggers, and compatibility with your store's extensions still require the [staging acceptance checklist](docs/testing.md#staging-acceptance-before-deployment). See the [validation record](VALIDATION.md) for what was actually tested.
 
 ## Downloads
 
 | File | Use |
 |---|---|
-| [Installable plugin ZIP](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/sheetbridge-1.0.1.zip) | Upload this file in WordPress |
+| [Installable plugin ZIP](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/sheetbridge-1.1.0.zip) | Upload this file in WordPress |
 | [Arabic / English user guide](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/SheetBridge-User-Guide-AR-EN.html) | Save the HTML file, then open it in your browser; switch languages or print |
 | [SHA-256 checksum](dist/SHA256SUMS.txt) | Verify the plugin download |
 
-GitHub's **Code → Download ZIP** downloads the complete development repository. For installation, use **sheetbridge-1.0.1.zip** from the link above.
+GitHub's **Code → Download ZIP** downloads the complete development repository. For installation, use **sheetbridge-1.1.0.zip** from the link above.
 
 ## Install
 
@@ -63,6 +63,8 @@ External hooks, emails, webhooks and persistent-cache behavior cannot be rolled 
 - `scripts/`: local build and isolated test helpers, never included in the plugin ZIP.
 - `docs/`: engineering design and acceptance guidance.
 - `dist/`: installable ZIP, standalone bilingual guide, and checksum.
+- `releases/`: bilingual release notes and compatibility metadata.
+- `updates/stable.json`: published stable-release manifest consumed by WordPress.
 - `.runtime/`: excluded local WordPress/MariaDB test environment; never distributed.
 
 ## Validate and package
@@ -74,7 +76,17 @@ powershell -ExecutionPolicy Bypass -File scripts/validate.ps1
 powershell -ExecutionPolicy Bypass -File scripts/package.ps1
 ```
 
-The validator runs PHP syntax checks, JavaScript parsing, 37 domain validation checks, and 27 connector checks. The package script builds the ZIP from `sheetbridge/`, exports the guide, and updates the checksum. PHP and Node.js must be on your PATH; packaging uses PowerShell's archive tools.
+The validator runs PHP syntax checks, JavaScript parsing, 37 domain validation checks, 32 connector checks, and 32 updater checks. The package script builds a portable ZIP from `sheetbridge/`, exports the guide, updates the checksum, and prepares `dist/sheetbridge-update.json`. PHP and Node.js must be on your PATH; packaging uses .NET ZIP APIs with explicit forward-slash paths.
+
+## WordPress updates and release details
+
+Once the updater is installed and SheetBridge is active, the Plugins page provides **View details** and **Check for updates**. Published stable releases appear in WordPress's standard **Update now** workflow. Details include the author, requirements, description, installation instructions, FAQ and changelog in Arabic or English according to the WordPress administration language. Automatic updates remain an administrator choice; SheetBridge does not enable them.
+
+The updater reads a public manifest from this repository and verifies the release ZIP's SHA-256 before installation. It does not send store data, spreadsheet data or connection keys to GitHub. A failed check retains previously verified details briefly; **Check for updates** reports retrieval failures instead of claiming the plugin is current.
+
+Versions 1.0.0/1.0.1 do not contain the updater and need a one-time manual installation of 1.1.0. Replace the private Apps Script code once with the bundled 1.1.0 connector, preserving Script Properties. This connector checks protocol compatibility instead of requiring the plugin's release number to match. Compatible future plugin updates therefore do not require replacing the script. Run `syncNow` to verify the connection; do not regenerate the connection key just to update code.
+
+See [Publishing a release](docs/releases.md) for the required publication order and rollback procedure. Only a published release asset should be advertised in the stable manifest.
 
 Integration and concurrency tests require the isolated test installation described in [docs/testing.md](docs/testing.md). Never point them at a real store. With that local database running, execute:
 

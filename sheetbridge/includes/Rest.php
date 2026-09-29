@@ -119,7 +119,7 @@ final class Rest
         } catch (Problem $error) {
             $database = false;
         }
-        return ['version' => SHEETBRIDGE_VERSION, 'woocommerce' => WC_VERSION, 'php' => PHP_VERSION,
+        return ['version' => SHEETBRIDGE_VERSION, 'connector_protocol' => SHEETBRIDGE_CONNECTOR_PROTOCOL, 'woocommerce' => WC_VERSION, 'php' => PHP_VERSION,
             'https' => is_ssl(), 'transactional_storage' => $database, 'settings' => Settings::get(),
             'approval_required' => true, 'stock_mode' => 'relative_adjustments', 'batch_size' => 50];
     }

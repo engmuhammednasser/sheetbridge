@@ -12,5 +12,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Admin JavaScript syntax failed.' }
 if ($LASTEXITCODE -ne 0) { throw 'Domain validation tests failed.' }
 & node tests/connector.test.cjs
 if ($LASTEXITCODE -ne 0) { throw 'Connector tests failed.' }
-Write-Output 'Syntax, domain validation and connector checks passed.'
+& php tests/updater.php
+if ($LASTEXITCODE -ne 0) { throw 'Updater tests failed.' }
+Write-Output 'Syntax, domain validation, connector and updater checks passed.'
 

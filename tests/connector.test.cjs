@@ -7,6 +7,11 @@ vm.runInContext(source, context, { filename: 'SheetBridge.gs' });
 let count = 0;
 function test(name, fn) { fn(); count++; console.log('PASS ' + name); }
 const run = code => vm.runInContext(code, context);
+test('future compatible plugin versions accept the same connector', () => assert.doesNotThrow(() => run(`sbAssertCompatibility({version:'1.9.0',connector_protocol:1})`)));
+test('legacy plugin 1.0.0 accepts the new connector', () => assert.doesNotThrow(() => run(`sbAssertCompatibility({version:'1.0.0'})`)));
+test('legacy plugin 1.0.1 accepts the new connector', () => assert.doesNotThrow(() => run(`sbAssertCompatibility({version:'1.0.1'})`)));
+test('incompatible protocol requires connector upgrade', () => assert.throws(() => run(`sbAssertCompatibility({version:'2.0.0',connector_protocol:2})`), /Update the connector/));
+test('unknown legacy protocol is rejected', () => assert.throws(() => run(`sbAssertCompatibility({version:'1.2.0'})`), /Update the connector/));
 run(`var settings = { fields: SB.fields, allow_create: true }; var item = { action:'update', product_id:12, revision:'a'.repeat(64), sku:'0000123', stock_adjustment:'5' };`);
 test('SKU preserves leading zeros', () => assert.equal(run('sbBuildPayload(item, settings).changes.sku'), '0000123'));
 test('integer stock adjustment', () => assert.equal(run('sbBuildPayload(item, settings).changes.stock_adjustment'), 5));

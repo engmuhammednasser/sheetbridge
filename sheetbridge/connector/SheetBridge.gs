@@ -1,10 +1,11 @@
 /**
- * SheetBridge 1.0.1. Install in a PRIVATE STANDALONE Apps Script project.
+ * SheetBridge connector 1.1.0 (protocol 1). Install in a PRIVATE STANDALONE Apps Script project.
  * Set SHOP_URL, CONNECTION_TOKEN and SPREADSHEET_ID in Project Settings > Script properties.
  * Run setup once, then syncNow. Never paste credentials into this file or a spreadsheet cell.
  */
 const SB = Object.freeze({
-  version: '1.0.1',
+  version: '1.1.0',
+  protocol: 1,
   fields: ['name', 'sku', 'regular_price', 'sale_price', 'stock_adjustment', 'initial_stock', 'manage_stock', 'status',
     'description', 'short_description', 'stock_status', 'backorders', 'category_ids', 'tag_ids', 'image_id', 'gallery_ids',
     'upsell_ids', 'cross_sell_ids', 'weight', 'length', 'width', 'height', 'attributes', 'variation_attributes', 'meta'],
@@ -17,10 +18,15 @@ const SB = Object.freeze({
 
 function sbHeaders() { return ['ready', 'action', 'product_id', 'type', 'parent_id', 'revision'].concat(SB.fields, SB.technical); }
 
+function sbAssertCompatibility(health) {
+  const protocol = health.connector_protocol === undefined && ['1.0.0', '1.0.1'].includes(health.version) ? 1 : health.connector_protocol;
+  if (protocol !== SB.protocol) throw new Error('Update the connector from your plugin. / حدّث الموصل من الإضافة.');
+}
+
 function setup() {
   const config = sbConfig();
   const health = sbApi('health');
-  if (health.version !== SB.version) throw new Error('Connector version mismatch. Download the connector from your plugin. / حدّث الموصل من الإضافة.');
+  sbAssertCompatibility(health);
   const book = SpreadsheetApp.openById(config.sheetId);
   const catalog = sbSheet(book, 'Catalog', SB.catalog);
   const changes = sbSheet(book, 'Changes', sbHeaders());
@@ -132,7 +138,7 @@ function syncNow() {
     const config = sbConfig();
     const book = SpreadsheetApp.openById(config.sheetId);
     const health = sbApi('health');
-    if (health.version !== SB.version) throw new Error('Update the connector to match the installed plugin. / حدّث الموصل.');
+    sbAssertCompatibility(health);
     const sheet = book.getSheetByName('Changes');
     if (!sheet) throw new Error('Run setup first. / شغّل setup أولًا.');
     sbCheckHeaders(sheet, sbHeaders());

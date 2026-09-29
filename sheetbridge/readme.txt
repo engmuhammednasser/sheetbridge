@@ -2,7 +2,8 @@
 Contributors: sheetbridge
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.0.1
+Stable tag: 1.1.0
+Tested up to: 7.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,10 +29,15 @@ The optional Google connector uses Google Sheets and Google Apps Script under yo
 
 The WordPress database stores product snapshots and review history, plus a hash of the connection key. Uninstall revokes the key but retains history and settings; products are not deleted. Google triggers must be stopped separately.
 
+Update checks retrieve a public release manifest from raw.githubusercontent.com/engmuhammednasser/sheetbridge/main/updates/stable.json. Updates download ZIP assets from the official GitHub repository releases and verify their SHA-256 checksums. No store, spreadsheet, customer or connection-key data is sent to GitHub by SheetBridge. Automatic updates remain optional in WordPress.
+
 == Limitations ==
 Single store, human approval required, no deletion or remote image fetching. Whole-unit stock on independently managed simple products/variations. Complex third-party product types, ACF structures, multi-store inventory and vendor isolation are outside this release. Validate hosting, cache, Google authorization and extension compatibility on staging.
 
 == Changelog ==
+= 1.1.0 =
+Native WordPress View details, manual update checks, stable GitHub release updates and SHA-256 package verification. Optional WordPress automatic updates remain under the administrator's control. Connector protocol compatibility avoids script replacement for future compatible plugin updates after a one-time upgrade to connector 1.1.0.
+
 = 1.0.1 =
 Credit muhammed nasser in plugin metadata, all admin page footers, and the bilingual user guide.
 

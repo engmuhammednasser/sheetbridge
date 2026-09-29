@@ -123,3 +123,13 @@ Deployment checks on PHP 8.2.33, WordPress 7.0.3, and WooCommerce 11.0.1:
 - Authenticated read-only dashboard and request-list REST checks returned 200; the unauthenticated dashboard check returned 403. Transactional storage passed and the database version is 1.0.1.
 - The storefront, login page, admin JavaScript, and user guide returned HTTP 200. The served assets contain the author credit, and the guide footer was inspected in the browser.
 - No test product, price, stock, or order changes were made. Google end-to-end synchronization remains unverified: the private Apps Script must also use connector version 1.0.1 because the current version check requires an exact match.
+
+## Native update workflow — 29 September 2026
+
+Version 1.1.0 adds the WordPress plugin-information modal, bilingual descriptions and release notes, nonce-protected manual checks, stable GitHub Release updates, and package SHA-256 verification. Release discovery is restricted to the public stable manifest; archive downloads must match the exact versioned asset URL. Automatic updates are not enabled by the plugin. The new connector uses protocol compatibility; older scripts still require a one-time code replacement.
+
+- Local validation passed: 11 PHP syntax checks, JavaScript syntax, 37 domain checks, 32 connector checks and 32 updater checks.
+- Updater tests cover unrelated plugins, cached/offline behavior, invalid metadata, wrong download origins, HTML escaping, Arabic details, checksum success/failure, and temporary-file cleanup.
+- WordPress 7.0.3 native `plugins_api` and hostname update-filter checks passed against staged 1.1.0 code with the candidate manifest. Description, installation, changelog and FAQ sections, banner metadata, version and minimum PHP requirements were returned correctly. The staged check did not replace the live plugin.
+- The release archive has 20 entries with a `sheetbridge/` root and forward-slash paths. Source and release publication precede advertising the stable manifest.
+- The host has an existing incident-containment `DISALLOW_FILE_MODS` setting. Native installation/update actions require the owner to authorize changing that policy separately from the plugin implementation.
