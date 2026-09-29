@@ -165,3 +165,13 @@ Version 1.1.1 adds the Arabic customer walkthrough, linked from the existing gui
 - In Chrome, followed the Arabic Connect and Reviews screens on the isolated store. Approved request 52 (test product 36, price 100 to 125), created reversal request 53, verified that preparing it left price 125 and the reversal pending, then approved it. The UI showed applied and WooCommerce independently returned price 100.
 - Reviewed the new guide's rendered Arabic headings, navigation and source-value table. The guide explains the source of SHOP_URL, SPREADSHEET_ID, CONNECTION_TOKEN, connector code and product/reference IDs, Google authorization, first approval, reversal and troubleshooting. No live connection secret is embedded.
 - Live Google authorization and a no-change manual cycle were verified earlier with connector 1.1.0 as recorded above. The connector code and protocol remain unchanged for 1.1.1; initial Google setup was not rerun during this review.
+
+### Published 1.1.1 and native production upgrade
+
+- Published GitHub Release `v1.1.1` from source commit `21e00aa`. Downloaded the published ZIP and verified SHA-256 `568d2b1b2ec21ff336cfea44aa62c9cc529f85f4c051fde6c66f060a16c4276e` before publishing the stable manifest. All 21 ZIP entries match source bytes and use forward-slash paths; relative links in both installed and standalone guides resolve.
+- Saved private backups of the installed 1.1.0 plugin, settings, connection, active-plugin list, versions and SheetBridge tables outside the public web root.
+- In the authenticated production Chrome session, used **Check for updates**, opened **View details**, verified the 1.1.1 changelog, then clicked native **Update Now**. WordPress reported **Update completed successfully**, and a reload showed active version 1.1.1.
+- All 21 deployed files match the verified published ZIP. Settings, connection, active-plugin membership, WordPress core and all other ordinary plugin versions were unchanged. Transactional storage passed, database version is 1.1.1, protocol remains 1, and the code editor remains disabled.
+- Followed the new customer-journey link from the deployed bilingual guide and verified the Arabic page opens. Screenshots of the guide and native update success are saved under ignored `artifacts/qa/`.
+
+After the native production upgrade to 1.1.1, the seven read-only authorization-denial checks passed again. The authenticated dashboard showed HTTPS and transactional storage ready, zero requests, and version 1.1.1. Existing settings and connection data matched the private backup; all 21 deployed files matched the verified release. Product-changing browser tests remained confined to the isolated local fixture.
