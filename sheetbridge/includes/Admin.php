@@ -23,8 +23,9 @@ final class Admin
         if ($hook !== 'woocommerce_page_sheetbridge') {
             return;
         }
-        wp_enqueue_style('sheetbridge', plugins_url('assets/admin.css', SHEETBRIDGE_FILE), [], SHEETBRIDGE_VERSION);
-        wp_enqueue_script('sheetbridge', plugins_url('assets/admin.js', SHEETBRIDGE_FILE), [], SHEETBRIDGE_VERSION, true);
+        // Some stores strip query-string versions and cache static assets for a year.
+        wp_enqueue_style('sheetbridge', plugins_url('assets/admin-' . SHEETBRIDGE_VERSION . '.css', SHEETBRIDGE_FILE), [], SHEETBRIDGE_VERSION);
+        wp_enqueue_script('sheetbridge', plugins_url('assets/admin-' . SHEETBRIDGE_VERSION . '.js', SHEETBRIDGE_FILE), [], SHEETBRIDGE_VERSION, true);
         wp_add_inline_script('sheetbridge', 'window.SheetBridgeConfig=' . wp_json_encode([
             'api' => rest_url('sheetbridge/v1/'), 'nonce' => wp_create_nonce('wp_rest'),
             'language' => Settings::get()['language'], 'owner' => current_user_can('manage_options'),

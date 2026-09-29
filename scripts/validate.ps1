@@ -6,7 +6,10 @@ foreach ($file in $files) {
     & php -l $file.FullName
     if ($LASTEXITCODE -ne 0) { throw "PHP syntax failed: $($file.Name)" }
 }
-& node --check sheetbridge/assets/admin.js
+$header = Get-Content sheetbridge/sheetbridge.php -Raw
+$version = [regex]::Match($header, '(?m)^ \* Version: (\d+\.\d+\.\d+)\s*$').Groups[1].Value
+if (-not (Test-Path "sheetbridge/assets/admin-$version.css")) { throw 'Versioned admin stylesheet is missing.' }
+& node --check "sheetbridge/assets/admin-$version.js"
 if ($LASTEXITCODE -ne 0) { throw 'Admin JavaScript syntax failed.' }
 & php tests/unit.php
 if ($LASTEXITCODE -ne 0) { throw 'Domain validation tests failed.' }

@@ -7,6 +7,9 @@ $header = Get-Content -LiteralPath (Join-Path $source 'sheetbridge.php') -Raw
 $versionMatch = [regex]::Match($header, '(?m)^ \* Version: (\d+\.\d+\.\d+)\s*$')
 if (-not $versionMatch.Success) { throw 'Plugin version header is missing or invalid.' }
 $version = $versionMatch.Groups[1].Value
+foreach ($extension in @('js', 'css')) {
+    if (-not (Test-Path -LiteralPath (Join-Path $source "assets/admin-$version.$extension"))) { throw "Missing versioned admin asset: $extension" }
+}
 $archiveName = "sheetbridge-$version.zip"
 $archive = Join-Path $output $archiveName
 Add-Type -AssemblyName System.IO.Compression

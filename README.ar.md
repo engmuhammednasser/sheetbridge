@@ -12,12 +12,12 @@
 
 | الملف | استخدامه |
 |---|---|
-| [تحميل الإضافة الجاهزة للتثبيت](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/sheetbridge-1.2.0.zip) | ارفع ملف ZIP مباشرة من لوحة ووردبريس |
+| [تحميل الإضافة الجاهزة للتثبيت](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/sheetbridge-1.2.1.zip) | ارفع ملف ZIP مباشرة من لوحة ووردبريس |
 | [رحلة العميل بالعربية](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/customer-journey-ar.html) | الخطوات ومصدر كل معلومة وأول تعديل وحل المشكلات |
 | [دليل المستخدم بالعربية والإنجليزية](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/SheetBridge-User-Guide-AR-EN.html) | احفظ ملف HTML وافتحه في المتصفح، ثم اختر اللغة أو اطبعه |
 | [بصمة SHA-256](dist/SHA256SUMS.txt) | للتحقق من سلامة ملف الإضافة |
 
-زر **Code → Download ZIP** ينزّل ملفات المشروع بالكامل. للتثبيت في ووردبريس استخدم ملف **sheetbridge-1.2.0.zip** من الرابط أعلاه. احفظ ملفي الدليل في المجلد نفسه حتى تعمل الروابط بينهما دون إنترنت.
+زر **Code → Download ZIP** ينزّل ملفات المشروع بالكامل. للتثبيت في ووردبريس استخدم ملف **sheetbridge-1.2.1.zip** من الرابط أعلاه. احفظ ملفي الدليل في المجلد نفسه حتى تعمل الروابط بينهما دون إنترنت.
 
 ## التثبيت والتشغيل بالخطوات
 

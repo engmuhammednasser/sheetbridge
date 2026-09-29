@@ -12,3 +12,5 @@ Local WordPress 7.0.3 / WooCommerce 11.0.1, isolated `sheetbridge_test` database
 - Reports distinguish submissions from completed exports and exclude credentials, product identity, site URL and arbitrary remote error text.
 
 Browser checks and Ashhalan deployment results are recorded after live acceptance.
+
+The live store strips query-string versions from static assets and sends a one-year cache lifetime. An existing browser consequently used old UI code after the successful 1.2.0 native update. Release 1.2.1 fixes this with versioned filenames and packaging checks, preserving the 1.2.0 connector and backend behavior.

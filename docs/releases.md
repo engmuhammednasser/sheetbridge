@@ -4,7 +4,7 @@ SheetBridge uses WordPress's `Update URI` hostname hook and `plugins_api` filter
 
 ## Prepare and publish
 
-1. Set the plugin header, `SHEETBRIDGE_VERSION`, stable tag, guide and README download links to the new version. Keep `SHEETBRIDGE_CONNECTOR_PROTOCOL` unchanged unless the connector contract actually changes. The connector's own version only needs to change when its code changes.
+1. Set the plugin header, `SHEETBRIDGE_VERSION`, stable tag, guide and README download links to the new version. Rename both admin assets to `admin-<version>.js` / `admin-<version>.css`; the loader and packaging checks require these paths so stores that strip query strings still get the new UI. Keep `SHEETBRIDGE_CONNECTOR_PROTOCOL` unchanged unless the connector contract actually changes. The connector's own version only needs to change when its code changes.
 2. Create `releases/<version>.json` with `tested`, UTC `published_at`, `changelog_en` and `changelog_ar`. Record only compatibility actually checked.
 3. Run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate.ps1`, then `scripts/package.ps1`. Inspect the ZIP and confirm its root is `sheetbridge/`. Packaging produces the ZIP, checksum and an ignored `dist/sheetbridge-update.json` candidate manifest.
 4. Commit and push source, release notes and the ZIP. Do not publish the candidate manifest yet.
