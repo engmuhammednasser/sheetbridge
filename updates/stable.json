@@ -1,13 +1,13 @@
 {
     "schema":  1,
     "slug":  "sheetbridge",
-    "version":  "1.1.0",
+    "version":  "1.1.1",
     "requires":  "6.5",
     "requires_php":  "8.1",
     "tested":  "7.0.3",
-    "package":  "https://github.com/engmuhammednasser/sheetbridge/releases/download/v1.1.0/sheetbridge-1.1.0.zip",
-    "sha256":  "317dd9f848dc493d0b7710d753ae1865ff66ddcd53b171995dfff594a17d5040",
-    "published_at":  "2026-09-29T09:44:34Z",
-    "changelog_en":  "1.1.0 — WordPress updates and release details\n\n• View details in the WordPress plugin list: description, installation, FAQ, changelog and requirements.\n• Check for updates and use the standard WordPress Update now action for published stable GitHub releases.\n• Verify the SHA-256 checksum before installing an update. Automatic updates remain optional.\n• Arabic and English release details, SheetBridge branding and author credit.\n• Connector protocol compatibility: replace older Apps Script code once with the bundled 1.1.0 connector; compatible future plugin versions do not require another script replacement.\n\n1.0.1 — Added muhammed nasser credits; corrected ZIP paths for Linux installations.\n1.0.0 — Initial reviewed Google Sheets workflow for WooCommerce.",
-    "changelog_ar":  "1.1.0 — تحديثات ووردبريس وتفاصيل الإصدارات\n\n• عرض التفاصيل من قائمة إضافات ووردبريس: الوصف والتثبيت والأسئلة الشائعة وسجل التغييرات والمتطلبات.\n• فحص التحديثات واستخدام زر «التحديث الآن» المعتاد للإصدارات المستقرة المنشورة على GitHub.\n• التحقق من بصمة SHA-256 قبل تثبيت التحديث، مع بقاء التحديث التلقائي اختياريًا.\n• تفاصيل بالعربية والإنجليزية وهوية SheetBridge واسم المطوّر.\n• توافق بروتوكول الموصل: استبدل سكربت Google القديم مرة واحدة بالموصل 1.1.0؛ إصدارات البلاجن المتوافقة بعد ذلك لا تحتاج استبداله مجددًا.\n\n1.0.1 — إضافة اسم muhammed nasser وتصحيح مسارات ZIP لسيرفرات Linux.\n1.0.0 — الإصدار الأول لإدارة منتجات WooCommerce من Google Sheets مع مراجعة التغييرات."
+    "package":  "https://github.com/engmuhammednasser/sheetbridge/releases/download/v1.1.1/sheetbridge-1.1.1.zip",
+    "sha256":  "568d2b1b2ec21ff336cfea44aa62c9cc529f85f4c051fde6c66f060a16c4276e",
+    "published_at":  "2026-09-29T11:20:00Z",
+    "changelog_en":  "1.1.1 — Scope enforcement and customer walkthrough\n\n• Recheck the current product scope before returning an existing preview on retry. Revoking access to a product now also blocks replay of its previous request. Approval already rechecked scope and remained protected.\n• Add an Arabic customer walkthrough explaining every required value, where to obtain it, Google setup and authorization, first approval, and recovery.\n• Expanded security regression checks for roles, nonces, tokens, payloads and revoked scope.\n• Connector 1.1.0 remains compatible through protocol 1. No script replacement or key rotation is needed.\n\n1.1.0 — Native WordPress release details, verified GitHub updates and connector protocol compatibility.",
+    "changelog_ar":  "1.1.1 — حماية نطاق المنتجات ودليل رحلة العميل\n\n• إعادة فحص نطاق المنتجات قبل إرجاع طلب سابق عند إعادة الإرسال؛ سحب السماح عن منتج يمنع أيضًا إعادة قراءة طلبه القديم بهذه الطريقة. تطبيق التعديل كان يفحص النطاق بالفعل وظل محميًا.\n• إضافة دليل عربي يشرح كل معلومة مطلوبة ومصدرها وخطوات Google والتفويض وأول اعتماد وحل المشكلات.\n• توسيع فحوصات الأمان للأدوار والتفويض والمفاتيح والمدخلات وسحب نطاق الوصول.\n• الموصل 1.1.0 يظل متوافقًا ببروتوكول الربط 1؛ لا يلزم تغيير السكربت أو إنشاء مفتاح جديد.\n\n1.1.0 — تفاصيل الإضافة والتحديثات الموثقة من GitHub وتوافق بروتوكول الموصل."
 }
