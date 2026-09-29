@@ -132,4 +132,15 @@ Version 1.1.0 adds the WordPress plugin-information modal, bilingual description
 - Updater tests cover unrelated plugins, cached/offline behavior, invalid metadata, wrong download origins, HTML escaping, Arabic details, checksum success/failure, and temporary-file cleanup.
 - WordPress 7.0.3 native `plugins_api` and hostname update-filter checks passed against staged 1.1.0 code with the candidate manifest. Description, installation, changelog and FAQ sections, banner metadata, version and minimum PHP requirements were returned correctly. The staged check did not replace the live plugin.
 - The release archive has 20 entries with a `sheetbridge/` root and forward-slash paths. Source and release publication precede advertising the stable manifest.
-- The host has an existing incident-containment `DISALLOW_FILE_MODS` setting. Native installation/update actions require the owner to authorize changing that policy separately from the plugin implementation.
+- The host had an existing incident-containment `DISALLOW_FILE_MODS` setting. After explicit owner approval and a private configuration backup, file modifications were enabled and `DISALLOW_FILE_EDIT` was set to `true` to keep the code editor disabled.
+
+### Published release and real WordPress upgrade
+
+- Published GitHub Release `v1.1.0`, downloaded its ZIP again and verified SHA-256 `317dd9f848dc493d0b7710d753ae1865ff66ddcd53b171995dfff594a17d5040`. Only then published `updates/stable.json`.
+- Backed up the active plugin, options, active-plugin list and SheetBridge tables outside the public document root. Added the updater bootstrap to the existing 1.0.1 installation without changing its version, so WordPress could discover the actual 1.1.0 release.
+- In the owner's authenticated Chrome Plugins page, clicked **Check for updates** and observed the native 1.1.0 update row. Opened **View details** and checked the banner, author, requirements and all four tabs: Description, Installation, Changelog and FAQ.
+- Clicked WordPress **Update Now** inside the details modal. The browser reported **Update completed successfully**. After reloading, the plugin remained active at 1.1.0. A subsequent manual check reported **you have the latest published version**.
+- All 20 deployed files match the published archive byte for byte. Existing settings and connection data remained unchanged; database version is 1.1.0 and connector protocol is 1. Active-plugin membership, other plugin versions and WordPress core 7.0.3 were unchanged.
+- Authenticated read-only dashboard and requests REST checks returned 200; the unauthenticated dashboard check returned 403. The storefront returned HTTP 200. The actual admin overview displayed HTTPS and transactional storage as ready and the footer displayed `by muhammed nasser`.
+- Local screenshots of the details modal, successful update and installed-version row are saved under ignored `artifacts/qa/`; configuration backups and connection data were not committed.
+- No product, stock, price or order test mutations were performed. Live Apps Script code replacement and end-to-end Google synchronization still require access to the owner's script project; plugin update success does not verify that separate workflow.
