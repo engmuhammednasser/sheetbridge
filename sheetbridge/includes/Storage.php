@@ -105,10 +105,15 @@ final class Storage
         }
     }
 
-    public static function listing(int $page = 1, string $state = ''): array
+    public static function listing(int $page = 1, string $state = '', string $search = ''): array
     {
         global $wpdb;
-        $where = $state !== '' ? $wpdb->prepare('WHERE state=%s', $state) : '';
+        $where = $state !== '' ? $wpdb->prepare('WHERE state=%s', $state) : 'WHERE 1=1';
+        if ($search !== '') {
+            $like = '%' . $wpdb->esc_like(substr($search, 0, 300)) . '%';
+            $numeric = ctype_digit($search) ? $wpdb->prepare('id=%d OR product_id=%d OR ', (int) $search, (int) $search) : '';
+            $where .= $wpdb->prepare(" AND ($numeric product_id IN (SELECT ID FROM {$wpdb->posts} WHERE post_type IN ('product','product_variation') AND post_title LIKE %s) OR product_id IN (SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key='_sku' AND meta_value LIKE %s))", $like, $like);
+        }
         $rows = $wpdb->get_results($wpdb->prepare('SELECT * FROM ' . self::table() . " $where ORDER BY id DESC LIMIT 30 OFFSET %d", (max(1, $page) - 1) * 30), ARRAY_A);
         return array_map([self::class, 'decode'], $rows ?: []);
     }
@@ -160,4 +165,3 @@ final class Storage
         return $row;
     }
 }
-

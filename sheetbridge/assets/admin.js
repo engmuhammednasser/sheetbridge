@@ -8,6 +8,7 @@
   let dashboard;
   let page = 1;
   let filter = '';
+  let search = '';
   let detail = null;
   let renderVersion = 0;
   let reviewVersion = 0;
@@ -67,6 +68,30 @@
     weight: ['Weight', 'الوزن'], length: ['Length', 'الطول'], width: ['Width', 'العرض'], height: ['Height', 'الارتفاع'],
     attributes: ['Local attributes', 'الخصائص المحلية'], variation_attributes: ['Variation options', 'خيارات المتغير'], meta: ['Allowed custom fields', 'الحقول المخصصة المسموح بها'],
   };
+  Object.assign(arabic, {
+    'Last successful run': 'آخر تشغيل ناجح', 'Last completed catalog': 'آخر تحديث مكتمل للكتالوج',
+    'Last submission': 'آخر إرسال للمراجعة', 'Active rows at last scan': 'صفوف نشطة عند آخر فحص',
+    'Rows needing attention': 'صفوف تحتاج إلى متابعة', 'Connector status': 'حالة الموصل',
+    success: 'يعمل', error: 'تعذر التشغيل', paused: 'الإرسال متوقف',
+    'Refresh status': 'تحديث الحالة', 'Download diagnostics': 'تنزيل تقرير الفحص',
+    'The report excludes connection keys, product data and spreadsheet links.': 'التقرير لا يتضمن مفاتيح الربط أو بيانات المنتجات أو روابط الشيت.',
+    'No recent report. Run syncNow in the private script and check its execution log.': 'لا يوجد تقرير حديث. شغّل syncNow في السكربت الخاص وراجع سجل التنفيذ.',
+    'Connection key expires within 14 days. Prepare to replace it in your private script.': 'مفتاح الربط ينتهي خلال ١٤ يومًا. جهّز استبداله في خصائص السكربت الخاص.',
+    'Search name, SKU, product or request ID': 'ابحث بالاسم أو SKU أو رقم المنتج أو الطلب', Search: 'بحث',
+    'Edit product': 'فتح المنتج في ووردبريس', 'Unavailable product': 'المنتج غير متاح',
+    'Price warning threshold (%)': 'نسبة التنبيه عند تغيير السعر (%)',
+    'A warning helps review; it does not block approval.': 'التنبيه يساعد في المراجعة، ويمكنك الاعتماد بعد التأكد.',
+    'Price change exceeds the configured warning threshold:': 'تغيير السعر يتجاوز نسبة التنبيه المحددة:',
+    'Paste a spreadsheet link or ID': 'الصق رابط ملف Google Sheets أو معرّفه',
+    'Copy ID': 'نسخ المعرّف', Copied: 'تم النسخ', 'Use a Google Sheets link or a valid spreadsheet ID.': 'أدخل رابط Google Sheets صحيحًا أو معرّف الملف.',
+    'Setup progress': 'تقدم الربط', 'Permitted fields selected': 'تم تحديد الحقول المسموح بها',
+    'Active connection key': 'مفتاح الربط نشط', 'Connector reached the store': 'الموصل اتصل بالمتجر',
+    'Catalog completed': 'اكتمل إرسال الكتالوج', 'Check connection': 'فحص الاتصال',
+    'A contact alone does not mean a catalog refresh completed.': 'الاتصال وحده لا يعني اكتمال تحديث الكتالوج.',
+    'Open Google Sheets': 'إنشاء ملف Google Sheets', 'Customer walkthrough': 'خطوات العميل',
+    'Changes are sent for review when you tick ready. WordPress approval is still required.': 'التعديل يُرسل للمراجعة عند تفعيل ready. يلزم اعتماده من ووردبريس لتغيير المتجر.',
+    'Illustrated guide': 'دليل بالصور',
+  });
   const t = (text) => lang === 'ar' ? (arabic[text] || text) : text;
   const errorMessages = {
     conflict: 'تغيرت بيانات المنتج بعد تجهيز الطلب. حدّث Catalog وأرسل صفًا جديدًا.',
@@ -154,7 +179,7 @@
     shell();
     const content = document.getElementById('sb-content');
     content.innerHTML = `<p role="status">${esc(t('Working…'))}</p>`;
-    if (!dashboard) dashboard = await api('admin/dashboard');
+    dashboard = await api('admin/dashboard');
     if (version !== renderVersion || !content.isConnected) return;
     if (selectedTab === 'overview') overview(content);
     if (selectedTab === 'reviews') await reviews(content);
@@ -168,14 +193,38 @@
       <section class="sb-panel"><h2>${esc(t('Diagnostics'))}</h2><ul class="sb-health">${[['HTTPS connection', h.https], ['Transactional database', h.transactional_storage]].map(([name, ok]) => `<li><span>${esc(t(name))}</span><strong>${esc(t(ok ? 'Ready' : 'Needs setup'))}</strong></li>`).join('')}<li><span>WooCommerce</span><strong>${esc(h.woocommerce)}</strong></li><li><span>${esc(t('Last connector contact'))}</span><span>${esc(date(dashboard.last_contact))}</span></li><li><span>${esc(t('Connection key expires'))}</span><span>${dashboard.connection_expires ? esc(date(new Date(dashboard.connection_expires * 1000).toISOString())) : esc(t('No active key'))}</span></li></ul></section></div>
       <section class="sb-callout"><h3>${esc(t('Stock adjustments preserve sales'))}</h3><p>${esc(t('Enter +5 to add five units or -2 to remove two. Current stock is a reference, not an editable absolute quantity.'))}</p></section>`;
     document.getElementById('sb-start').onclick = () => { tab = 'connect'; render().catch(error => notice(error.message, true)); };
+    content.insertAdjacentHTML('afterbegin', connectorStatus());
+    bindDiagnostics();
+  }
+  function connectorStatus() {
+    const c = dashboard.connector;
+    const stale = !c || Date.now() - Date.parse(c.reported_at) > 20 * 60000;
+    const expiring = dashboard.connection_expires && dashboard.connection_expires * 1000 - Date.now() < 14 * 86400000;
+    return `<section class="sb-panel"><div class="sb-row sb-between"><h2>${esc(t('Connector status'))} ${c ? badge(c.state) : ''}</h2><div class="sb-row"><button id="sb-status-refresh">${esc(t('Refresh status'))}</button>${config.owner ? `<button id="sb-diagnostics">${esc(t('Download diagnostics'))}</button>` : ''}</div></div>${stale ? `<p class="sb-callout sb-warning">${esc(t('No recent report. Run syncNow in the private script and check its execution log.'))}</p>` : ''}${expiring ? `<p class="sb-callout sb-warning">${esc(t('Connection key expires within 14 days. Prepare to replace it in your private script.'))}</p>` : ''}<dl class="sb-status-grid">${[['Last successful run', date(c?.last_success)], ['Last completed catalog', date(c?.last_catalog)], ['Last submission', date(c?.last_submission)], ['Active rows at last scan', c?.active_rows ?? '—'], ['Rows needing attention', c?.error_rows ?? '—']].map(([k, v]) => `<div><dt>${esc(t(k))}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl><p class="sb-note">${esc(t('A contact alone does not mean a catalog refresh completed.'))} ${esc(t('The report excludes connection keys, product data and spreadsheet links.'))}</p></section>`;
+  }
+  function bindDiagnostics() {
+    document.getElementById('sb-status-refresh').onclick = event => busy(event.target, render);
+    const download = document.getElementById('sb-diagnostics');
+    if (download) download.onclick = event => busy(event.target, async () => {
+      const report = await api('admin/diagnostics');
+      const url = URL.createObjectURL(new Blob([JSON.stringify(report, null, 2)], {type: 'application/json'}));
+      const link = document.createElement('a'); link.href = url; link.download = 'sheetbridge-diagnostics.json'; link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  }
+  function productIdentity(job) {
+    const p = job.product || {};
+    const safeUrl = value => { try { const url = new URL(value); return ['https:', 'http:'].includes(url.protocol) ? esc(url.href) : ''; } catch { return ''; } };
+    return `<div class="sb-product">${p.image && safeUrl(p.image) ? `<img src="${safeUrl(p.image)}" alt="" width="48" height="48" loading="lazy">` : ''}<div><strong>${esc(p.name || t('New draft'))}</strong><div class="sb-note"><bdi>#${job.product_id || '—'} · SKU: ${esc(p.sku || '—')}</bdi></div>${p.edit_url && safeUrl(p.edit_url) ? `<a href="${safeUrl(p.edit_url)}" target="_blank" rel="noopener">${esc(t('Edit product'))} ↗</a>` : ''}</div></div>`;
   }
   async function reviews(content) {
     const version = ++reviewVersion;
-    const requests = await api(`admin/requests?page=${page}&state=${encodeURIComponent(filter)}`);
+    const requests = await api(`admin/requests?page=${page}&state=${encodeURIComponent(filter)}&search=${encodeURIComponent(search)}`);
     if (version !== reviewVersion || !content.isConnected) return;
     content.innerHTML = `<section class="sb-panel"><div class="sb-row sb-between"><h2>${esc(t('Reviews'))}</h2><div class="sb-row"><select id="sb-filter" aria-label="${esc(t('State'))}"><option value="">${esc(t('All states'))}</option>${['pending', 'applied', 'conflict', 'failed', 'rejected'].map(state => `<option value="${state}" ${filter === state ? 'selected' : ''}>${esc(t(state))}</option>`).join('')}</select><button id="sb-refresh">${esc(t('Refresh'))}</button></div></div>
-      <div class="sb-table-wrap"><table><thead><tr>${['Request', 'Product', 'State', 'Submitted', 'View'].map(text => `<th>${esc(t(text))}</th>`).join('')}</tr></thead><tbody>${requests.map(job => `<tr><td>#${job.id}</td><td>${job.product_id || esc(t('New draft'))}</td><td>${badge(job.state)}</td><td>${esc(date(job.created_at))}</td><td><button data-view="${job.id}">${esc(t('View'))}</button></td></tr>`).join('')}</tbody></table></div>${requests.length ? '' : `<p class="sb-empty">${esc(t('No requests on this page.'))}</p>`}
+      <form id="sb-search-form" class="sb-row sb-search"><input id="sb-search" type="search" maxlength="100" value="${esc(search)}" aria-label="${esc(t('Search name, SKU, product or request ID'))}" placeholder="${esc(t('Search name, SKU, product or request ID'))}"><button type="submit">${esc(t('Search'))}</button></form><div class="sb-table-wrap"><table><thead><tr>${['Request', 'Product', 'State', 'Submitted', 'View'].map(text => `<th>${esc(t(text))}</th>`).join('')}</tr></thead><tbody>${requests.map(job => `<tr><td>#${job.id}</td><td>${productIdentity(job)}</td><td>${badge(job.state)}</td><td>${esc(date(job.created_at))}</td><td><button data-view="${job.id}">${esc(t('View'))}</button></td></tr>`).join('')}</tbody></table></div>${requests.length ? '' : `<p class="sb-empty">${esc(t('No requests on this page.'))}</p>`}
       <div class="sb-row"><button id="sb-previous" ${page === 1 ? 'disabled' : ''}>${esc(t('Previous'))}</button><span>${page}</span><button id="sb-next" ${requests.length < 30 ? 'disabled' : ''}>${esc(t('Next'))}</button></div></section><div id="sb-detail"></div>`;
+    document.getElementById('sb-search-form').onsubmit = event => { event.preventDefault(); search = document.getElementById('sb-search').value.trim(); page = 1; detail = null; reviews(content).catch(error => notice(error.message, true)); };
     document.getElementById('sb-filter').onchange = event => { filter = event.target.value; page = 1; reviews(content).catch(error => notice(error.message, true)); };
     document.getElementById('sb-refresh').onclick = () => reviews(content).catch(error => notice(error.message, true));
     document.getElementById('sb-previous').onclick = () => { page--; reviews(content).catch(error => notice(error.message, true)); };
@@ -188,14 +237,15 @@
     const area = document.getElementById('sb-detail');
     if (!area || !job) return;
     const changes = job.payload.changes;
-    const priceWarning = ['regular_price', 'sale_price'].some(field => Number(job.before_data[field]) > 0 && changes[field] !== undefined && Math.abs(Number(changes[field]) / Number(job.before_data[field]) - 1) > .5);
-    area.innerHTML = `<section class="sb-panel sb-detail"><div class="sb-row sb-between"><h2>${esc(t('Review request'))} #${job.id} ${badge(job.state)}</h2><button id="sb-close">${esc(t('Close'))}</button></div><p class="sb-note">${esc(t('A snapshot is checked again at approval. Conflicts are stopped; successful requests cannot run twice.'))}</p>${job.error_message ? `<div class="sb-callout sb-error" role="alert">${esc(job.error_message)} [${esc(job.error_code)}]</div>` : ''}${priceWarning ? `<div class="sb-callout sb-warning">${esc(t('Price changes over 50% deserve another check.'))}</div>` : ''}
+    const priceWarning = ['regular_price', 'sale_price'].some(field => Number(job.before_data[field]) > 0 && changes[field] !== undefined && Math.abs(Number(changes[field]) / Number(job.before_data[field]) - 1) > dashboard.settings.price_warning_percent / 100);
+    area.innerHTML = `<section class="sb-panel sb-detail"><div class="sb-row sb-between"><h2>${esc(t('Review request'))} #${job.id} ${badge(job.state)}</h2><button id="sb-close">${esc(t('Close'))}</button></div>${productIdentity(job)}<p class="sb-note">${esc(t('A snapshot is checked again at approval. Conflicts are stopped; successful requests cannot run twice.'))}</p>${job.error_message ? `<div class="sb-callout sb-error" role="alert">${esc(job.error_message)} [${esc(job.error_code)}]</div>` : ''}${priceWarning ? `<div class="sb-callout sb-warning">${esc(t('Price change exceeds the configured warning threshold:'))} ${esc(dashboard.settings.price_warning_percent)}%</div>` : ''}
       <div class="sb-table-wrap"><table><thead><tr>${['Field', 'Before', 'Proposed'].map(text => `<th>${esc(t(text))}</th>`).join('')}</tr></thead><tbody>${Object.entries(changes).map(([field, value]) => `<tr><td>${esc(label(field))}</td><td><pre>${esc(format(field === 'stock_adjustment' ? job.before_data.stock_quantity : job.before_data[field]))}</pre></td><td><pre>${esc(format(value))}${field === 'stock_adjustment' ? '\n' + esc(t('Relative adjustment')) : ''}</pre></td></tr>`).join('')}</tbody></table></div><div class="sb-row" style="margin-top:20px">${['pending', 'failed'].includes(job.state) ? `<button data-action="apply" class="sb-primary">${esc(t('Apply changes'))}</button>` : ''}${['pending', 'failed', 'conflict'].includes(job.state) ? `<button data-action="reject" class="sb-danger">${esc(t('Reject'))}</button>` : ''}${job.state === 'applied' && job.payload.action === 'update' ? `<button data-action="reverse">${esc(t('Prepare reversal'))}</button>` : ''}</div></section>`;
     document.getElementById('sb-close').onclick = () => { detail = null; area.replaceChildren(); };
     area.querySelectorAll('[data-action]').forEach(button => button.onclick = () => busy(button, async () => {
       const action = button.dataset.action;
       if (action !== 'reverse' && !await confirmAction(t(action === 'apply' ? 'Apply this reviewed change to the store?' : 'Reject this request?'))) return;
-      detail = await api(`admin/requests/${job.id}/${action}`, {});
+      const updated = await api(`admin/requests/${job.id}/${action}`, {});
+      detail = await api('admin/requests/' + updated.id);
       dashboard = await api('admin/dashboard');
       await reviews(document.getElementById('sb-content'));
       notice(t(action === 'reverse' ? 'The reversal is a new preview. Review it before applying.' : action === 'apply' ? 'Changes applied.' : 'Request rejected.'));
@@ -203,10 +253,23 @@
     area.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   function connect(content) {
-    content.innerHTML = `<section class="sb-panel"><h2>${esc(t('Connect your spreadsheet'))}</h2><ol class="sb-stack"><li><h3>${esc(t('Create a blank spreadsheet'))}</h3><p>${esc(t('Create a new Google spreadsheet. Copy its ID from the URL between /d/ and /edit.'))}</p></li>
+    const steps = [['Permitted fields selected', dashboard.settings.fields.length > 0], ['Active connection key', dashboard.connection_expires * 1000 > Date.now()], ['Connector reached the store', !!dashboard.last_contact], ['Catalog completed', !!dashboard.connector?.last_catalog]];
+    content.innerHTML = `<section class="sb-panel"><h2>${esc(t('Connect your spreadsheet'))}</h2><div class="sb-setup"><h3>${esc(t('Setup progress'))}</h3><ul class="sb-health">${steps.map(([text, ok]) => `<li><span>${esc(t(text))}</span><strong>${ok ? '✓' : '○'}</strong></li>`).join('')}</ul><button id="sb-check-connection">${esc(t('Check connection'))}</button><p class="sb-note">${esc(t('A contact alone does not mean a catalog refresh completed.'))}</p></div><ol class="sb-stack"><li><h3>${esc(t('Create a blank spreadsheet'))}</h3><p>${esc(t('Paste a spreadsheet link or ID'))}</p><a class="sb-button" href="https://sheets.google.com/create" target="_blank" rel="noopener">${esc(t('Open Google Sheets'))} ↗</a><label for="sb-sheet-link">${esc(t('Paste a spreadsheet link or ID'))}</label><input id="sb-sheet-link" type="text" dir="ltr" autocomplete="off"><div class="sb-row"><code id="sb-sheet-id" dir="ltr"></code><button id="sb-copy-id" type="button" disabled>${esc(t('Copy ID'))}</button></div></li>
       <li><h3>${esc(t('Create a private script'))}</h3><p>${esc(t('Open a standalone Apps Script project. Paste the connector code into Code.gs. Do not share this project with sheet editors.'))}</p><div class="sb-row"><a class="sb-button" href="${esc(config.connector)}" download="SheetBridge.gs">${esc(t('Download connector'))}</a><a class="sb-button" href="https://script.google.com/home/start" target="_blank" rel="noopener">${esc(t('Open Apps Script'))} ↗</a></div></li>
-      <li><h3>${esc(t('Add three script properties'))}</h3><p>${esc(t('In Apps Script open Project Settings → Script properties. Add these names exactly.'))}</p><div class="sb-table-wrap"><table><tbody><tr><th><code>SHOP_URL</code></th><td><code dir="ltr">${esc(config.store)}</code></td></tr><tr><th><code>SPREADSHEET_ID</code></th><td>${esc(t('Your spreadsheet ID'))}</td></tr><tr><th><code>CONNECTION_TOKEN</code></th><td>${esc(t('A newly generated connection key'))}</td></tr></tbody></table></div>${config.owner ? `<div class="sb-row" style="margin-top:16px"><button id="sb-key" class="sb-primary">${esc(t('Generate new key'))}</button><button id="sb-revoke" class="sb-danger">${esc(t('Revoke key'))}</button></div><div id="sb-key-output"></div>` : `<p>${esc(t('Only the site administrator can manage connection keys and settings.'))}</p>`}</li>
+      <li><h3>${esc(t('Add three script properties'))}</h3><p>${esc(t('In Apps Script open Project Settings → Script properties. Add these names exactly.'))}</p><div class="sb-table-wrap"><table><tbody><tr><th><code>SHOP_URL</code></th><td><code dir="ltr">${esc(config.store)}</code></td></tr><tr><th><code>SPREADSHEET_ID</code></th><td><code id="sb-property-id" dir="ltr">${esc(t('Your spreadsheet ID'))}</code></td></tr><tr><th><code>CONNECTION_TOKEN</code></th><td>${esc(t('A newly generated connection key'))}</td></tr></tbody></table></div>${config.owner ? `<div class="sb-row" style="margin-top:16px"><button id="sb-key" class="sb-primary">${esc(t('Generate new key'))}</button><button id="sb-revoke" class="sb-danger">${esc(t('Revoke key'))}</button></div><div id="sb-key-output"></div>` : `<p>${esc(t('Only the site administrator can manage connection keys and settings.'))}</p>`}</li>
       <li><h3>${esc(t('Run setup, then syncNow'))}</h3><p>${esc(t('Authorize the Google permissions. Setup creates Catalog, Changes, References and Help tabs, then installs a five-minute trigger. No web app deployment is needed.'))}</p></li></ol></section>`;
+    document.getElementById('sb-check-connection').onclick = event => busy(event.target, render);
+    content.querySelector('.sb-setup').insertAdjacentHTML('beforeend', `<a class="sb-button" href="${esc(config.illustratedGuide)}" target="_blank" rel="noopener">${esc(t('Illustrated guide'))} ↗</a>`);
+    const linkInput = document.getElementById('sb-sheet-link');
+    linkInput.oninput = () => {
+      const value = linkInput.value.trim();
+      const match = value.match(/^https:\/\/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9_-]{15,})(?:\/|$)/);
+      const id = match ? match[1] : /^[a-zA-Z0-9_-]{15,}$/.test(value) ? value : '';
+      document.getElementById('sb-sheet-id').textContent = id || (value ? t('Use a Google Sheets link or a valid spreadsheet ID.') : '');
+      document.getElementById('sb-property-id').textContent = id || t('Your spreadsheet ID');
+      document.getElementById('sb-copy-id').disabled = !id;
+    };
+    document.getElementById('sb-copy-id').onclick = event => busy(event.target, async () => { await navigator.clipboard.writeText(document.getElementById('sb-sheet-id').textContent); notice(t('Copied')); });
     if (config.owner) {
       document.getElementById('sb-key').onclick = event => busy(event.target, async () => {
         if (!await confirmAction(t('A new key immediately invalidates the previous one. Continue?'))) return;
@@ -224,13 +287,13 @@
     if (!config.owner) { content.innerHTML = `<section class="sb-panel">${esc(t('Only the site administrator can manage connection keys and settings.'))}</section>`; return; }
     const s = dashboard.settings;
     content.innerHTML = `<form id="sb-settings"><section class="sb-panel"><h2>${esc(t('Settings'))}</h2><div class="sb-fields">${[['inbound_paused', 'Pause submissions and approvals'], ['outbound_paused', 'Pause product exports'], ['allow_create', 'Allow new draft products']].map(([key, text]) => `<label class="sb-check"><input type="checkbox" name="${key}" ${s[key] ? 'checked' : ''}>${esc(t(text))}</label>`).join('')}</div><div style="margin-top:18px"><label for="sb-setting-language">${esc(t('Interface language'))}</label><select id="sb-setting-language" name="language"><option value="en" ${s.language === 'en' ? 'selected' : ''}>English</option><option value="ar" ${s.language === 'ar' ? 'selected' : ''}>العربية</option></select></div></section>
-      <section class="sb-panel"><h2>${esc(t('Permitted fields'))}</h2><p>${esc(t('These permissions are enforced on the server for every submission and approval.'))}</p><div class="sb-fields">${config.fields.map(field => `<label class="sb-check"><input type="checkbox" name="fields" value="${field}" ${s.fields.includes(field) ? 'checked' : ''}>${esc(label(field))}</label>`).join('')}</div></section>
+      <section class="sb-panel"><label for="sb-threshold">${esc(t('Price warning threshold (%)'))}</label><input id="sb-threshold" name="price_warning_percent" type="number" min="1" max="1000" step="1" required value="${esc(s.price_warning_percent)}"><p class="sb-note">${esc(t('A warning helps review; it does not block approval.'))}</p></section><section class="sb-panel"><h2>${esc(t('Permitted fields'))}</h2><p>${esc(t('These permissions are enforced on the server for every submission and approval.'))}</p><div class="sb-fields">${config.fields.map(field => `<label class="sb-check"><input type="checkbox" name="fields" value="${field}" ${s.fields.includes(field) ? 'checked' : ''}>${esc(label(field))}</label>`).join('')}</div></section>
       <section class="sb-panel sb-stack"><div><label for="sb-scope">${esc(t('Product scope'))}</label><input id="sb-scope" name="product_ids" type="text" value="${esc(s.product_ids.join(','))}" dir="ltr"><p class="sb-note">${esc(t('Leave empty for all products, or enter product IDs separated by commas. Include the parent ID when allowing variations. Creation is disabled when a scope is set.'))}</p></div><div><label for="sb-meta">${esc(t('Allowed custom fields'))}</label><input id="sb-meta" name="meta_keys" type="text" value="${esc(s.meta_keys.join(','))}" dir="ltr"><p class="sb-note">${esc(t('Comma-separated keys starting with sb_. Only simple scalar values are supported.'))}</p></div><div><button class="sb-primary" type="submit">${esc(t('Save settings'))}</button></div></section></form>`;
     document.getElementById('sb-settings').onsubmit = event => {
       event.preventDefault();
       const form = new FormData(event.target);
       busy(event.target.querySelector('[type=submit]'), async () => {
-        dashboard.settings = await api('admin/settings', { language: form.get('language'), inbound_paused: form.has('inbound_paused'), outbound_paused: form.has('outbound_paused'), allow_create: form.has('allow_create'), fields: form.getAll('fields'), product_ids: form.get('product_ids'), meta_keys: form.get('meta_keys') });
+        dashboard.settings = await api('admin/settings', { language: form.get('language'), price_warning_percent: form.get('price_warning_percent'), inbound_paused: form.has('inbound_paused'), outbound_paused: form.has('outbound_paused'), allow_create: form.has('allow_create'), fields: form.getAll('fields'), product_ids: form.get('product_ids'), meta_keys: form.get('meta_keys') });
         lang = dashboard.settings.language; await render(); notice(t('Settings saved.'));
       });
     };

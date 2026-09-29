@@ -30,6 +30,7 @@ final class Admin
             'language' => Settings::get()['language'], 'owner' => current_user_can('manage_options'),
             'connector' => plugins_url('connector/SheetBridge.gs', SHEETBRIDGE_FILE),
             'guide' => plugins_url('docs/user-guide.html', SHEETBRIDGE_FILE),
+            'illustratedGuide' => plugins_url('docs/illustrated-guide-ar.html', SHEETBRIDGE_FILE),
             'store' => home_url('/'), 'version' => SHEETBRIDGE_VERSION, 'fields' => Validation::fields(),
         ]) . ';', 'before');
     }
@@ -43,4 +44,3 @@ final class Admin
         echo '<noscript><p>Enable JavaScript to use SheetBridge. / يرجى تفعيل JavaScript لاستخدام الإضافة.</p></noscript>';
     }
 }
-

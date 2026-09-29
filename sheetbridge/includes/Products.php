@@ -3,6 +3,20 @@ namespace SheetBridge;
 
 final class Products
 {
+    public static function reviewIdentity(array $job): array
+    {
+        $p = $job['product_id'] ? wc_get_product($job['product_id']) : false;
+        $image = $p ? wp_get_attachment_image_url($p->get_image_id(), 'thumbnail') : false;
+        $job['product'] = [
+            'name' => $p ? $p->get_name() : ($job['before_data']['name'] ?? $job['payload']['changes']['name'] ?? ''),
+            'sku' => $p ? $p->get_sku() : ($job['before_data']['sku'] ?? $job['payload']['changes']['sku'] ?? ''),
+            'image' => $image ?: '',
+            'edit_url' => $p && current_user_can('edit_post', $p->get_id()) ? get_edit_post_link($p->get_id(), 'raw') : '',
+            'available' => $p && $p->get_status() !== 'trash',
+        ];
+        return $job;
+    }
+
     public static function get(int $id): \WC_Product
     {
         $product = wc_get_product($id);

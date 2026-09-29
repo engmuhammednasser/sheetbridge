@@ -2,7 +2,7 @@
 Contributors: sheetbridge
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.1.1
+Stable tag: 1.2.0
 Tested up to: 7.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -36,6 +36,9 @@ Update checks retrieve a public release manifest from raw.githubusercontent.com/
 Single store, human approval required, no deletion or remote image fetching. Whole-unit stock on independently managed simple products/variations. Complex third-party product types, ACF structures, multi-store inventory and vendor isolation are outside this release. Validate hosting, cache, Google authorization and extension compatibility on staging.
 
 == Changelog ==
+
+= 1.2.0 =
+Send manually readied rows immediately for review, prioritize active rows, select products by name/SKU and show protected current values. Add connector progress, sanitized diagnostics, setup link parsing, review search/product identity and configurable price warnings. Run connector setup once after replacing old code; preserve Script Properties. Manual WordPress approval remains required.
 = 1.1.1 =
 Recheck product scope before returning an existing preview on retries. Include a detailed Arabic customer walkthrough and expanded security regression coverage. Connector 1.1.0 remains compatible; no script replacement or key rotation is needed.
 

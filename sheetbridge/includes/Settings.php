@@ -8,6 +8,7 @@ final class Settings
         return [
             'language' => 'en', 'inbound_paused' => false, 'outbound_paused' => false,
             'allow_create' => false, 'product_ids' => [], 'meta_keys' => [],
+            'price_warning_percent' => 50,
             'fields' => ['name', 'regular_price', 'sale_price', 'stock_adjustment'],
         ];
     }
@@ -21,6 +22,11 @@ final class Settings
     {
         $settings = self::defaults();
         $settings['language'] = ($input['language'] ?? 'en') === 'ar' ? 'ar' : 'en';
+        $threshold = $input['price_warning_percent'] ?? self::get()['price_warning_percent'];
+        if (filter_var($threshold, FILTER_VALIDATE_INT) === false || (int) $threshold < 1 || (int) $threshold > 1000) {
+            throw new Problem('invalid_threshold', 'Price warning must be a whole percentage between 1 and 1000.');
+        }
+        $settings['price_warning_percent'] = (int) $threshold;
         foreach (['inbound_paused', 'outbound_paused', 'allow_create'] as $key) {
             $settings[$key] = !empty($input[$key]);
         }
@@ -61,6 +67,7 @@ final class Settings
         $token = bin2hex(random_bytes(32));
         update_option('sheetbridge_connection', ['hash' => hash('sha256', $token), 'expires' => time() + 90 * DAY_IN_SECONDS, 'site_url' => home_url('/')], false);
         delete_option('sheetbridge_last_contact');
+        delete_option('sheetbridge_connector_status');
         return $token;
     }
 

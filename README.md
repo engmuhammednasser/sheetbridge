@@ -12,12 +12,12 @@ This is the development repository for **SheetBridge for WooCommerce**, an indep
 
 | File | Use |
 |---|---|
-| [Installable plugin ZIP](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/sheetbridge-1.1.1.zip) | Upload this file in WordPress |
+| [Installable plugin ZIP](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/sheetbridge-1.2.0.zip) | Upload this file in WordPress |
 | [Arabic customer walkthrough](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/customer-journey-ar.html) | Setup, where to find every required value, first approval, daily use and troubleshooting |
 | [Arabic / English user guide](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/SheetBridge-User-Guide-AR-EN.html) | Save the HTML file, then open it in your browser; switch languages or print |
 | [SHA-256 checksum](dist/SHA256SUMS.txt) | Verify the plugin download |
 
-GitHub's **Code → Download ZIP** downloads the complete development repository. For installation, use **sheetbridge-1.1.1.zip** from the link above. Save both HTML guides together for their cross-links to work offline.
+GitHub's **Code → Download ZIP** downloads the complete development repository. For installation, use **sheetbridge-1.2.0.zip** from the link above. Save both HTML guides together for their cross-links to work offline.
 
 ## Install
 

@@ -18,6 +18,7 @@ final class Rest
             return Products::catalog(max(0, (int) $request->get_param('cursor')), min(100, max(1, (int) ($request->get_param('limit') ?: 50))));
         });
         $this->route('/references', 'GET', [$this, 'references']);
+        $this->route('/connector-status', 'POST', fn($request) => Diagnostics::report($this->body($request)));
         $this->route('/changes', 'POST', fn($request) => $this->publicJob((new Sync())->preview($this->body($request))));
         $this->route('/changes/(?P<key>[a-zA-Z0-9_-]{16,80})', 'GET', function ($request) {
             $job = Storage::byKey($request['key']);
@@ -31,10 +32,12 @@ final class Rest
         });
         $this->route('/admin/dashboard', 'GET', function () {
             return ['counts' => Storage::counts(), 'settings' => Settings::get(), 'health' => $this->health(),
+                'connector' => get_option('sheetbridge_connector_status', null),
                 'last_contact' => get_option('sheetbridge_last_contact', null), 'connection_expires' => (get_option('sheetbridge_connection', [])['expires'] ?? null)];
         }, true);
-        $this->route('/admin/requests', 'GET', fn($request) => Storage::listing((int) ($request->get_param('page') ?: 1), sanitize_key((string) $request->get_param('state'))), true);
-        $this->route('/admin/requests/(?P<id>\d+)', 'GET', fn($request) => Storage::get((int) $request['id']), true);
+        $this->route('/admin/diagnostics', 'GET', fn() => Diagnostics::download(), true, true);
+        $this->route('/admin/requests', 'GET', fn($request) => array_map([Products::class, 'reviewIdentity'], Storage::listing((int) ($request->get_param('page') ?: 1), sanitize_key((string) $request->get_param('state')), sanitize_text_field((string) $request->get_param('search')))), true);
+        $this->route('/admin/requests/(?P<id>\d+)', 'GET', fn($request) => Products::reviewIdentity(Storage::get((int) $request['id'])), true);
         $this->route('/admin/requests/(?P<id>\d+)/(?P<action>apply|reject|reverse)', 'POST', function ($request) {
             return (new Sync())->{$request['action']}((int) $request['id']);
         }, true);
@@ -121,7 +124,8 @@ final class Rest
         }
         return ['version' => SHEETBRIDGE_VERSION, 'connector_protocol' => SHEETBRIDGE_CONNECTOR_PROTOCOL, 'woocommerce' => WC_VERSION, 'php' => PHP_VERSION,
             'https' => is_ssl(), 'transactional_storage' => $database, 'settings' => Settings::get(),
-            'approval_required' => true, 'stock_mode' => 'relative_adjustments', 'batch_size' => 50];
+            'approval_required' => true, 'stock_mode' => 'relative_adjustments', 'batch_size' => 50,
+            'capabilities' => ['connector_status']];
     }
 
     public function references($request): array

@@ -48,6 +48,9 @@ function fakeSheet(headers, records) {
       return {
         getValues() { return Array.from({length: rows}, (_, y) => Array.from({length: columns}, (_, x) => data[row - 1 + y]?.[column - 1 + x] ?? '')); },
         setValue(value) { data[row - 1] ??= []; data[row - 1][column - 1] = value; return this; },
+        setValues(values) { values.forEach((line, y) => line.forEach((value, x) => { data[row - 1 + y] ??= []; data[row - 1 + y][column - 1 + x] = value; })); return this; },
+        setNumberFormat() { return this; },
+        clearContent() { return this.setValues(Array.from({length:rows}, () => Array(columns).fill(''))); },
       };
     },
     field(row, key) { return data[row - 1][headers.indexOf(key)]; },
@@ -86,5 +89,39 @@ sheet.data[1][headers.indexOf('regular_price')] = '999';
 context.sbApi = (path,body) => { if(body){posts++;savedPayload=JSON.parse(JSON.stringify(body));return {state:'pending',product_id:12};}const error=new Error('Not found');error.status=404;throw error; };
 test('retry resubmits saved payload, not edits made after submission', () => { run('sbProcessChanges(testSheet,settings,Date.now())'); assert.equal(savedPayload.changes.regular_price,'50'); assert.equal(sheet.field(2,'state'),'pending'); });
 sheet=fakeSheet(headers,Array.from({length:150},()=>({state:'applied'}))); context.testSheet=sheet; properties.clear();
-test('large Changes sheet rotates bounded row cursor',()=>{run('sbProcessChanges(testSheet,settings,Date.now())');assert.equal(properties.get('SB_ROW_CURSOR'),'102');run('sbProcessChanges(testSheet,settings,Date.now())');assert.equal(properties.get('SB_ROW_CURSOR'),'2');});
+test('completed history produces no API traffic',()=>{let calls=0;context.sbApi=()=>calls++;run('sbProcessChanges(testSheet,settings,Date.now())');assert.equal(calls,0);});
+sheet = fakeSheet(headers, [...Array.from({length:1500},()=>({state:'applied'})), {ready:true,action:'update',product_id:12,revision:'a'.repeat(64),regular_price:'80'}]);
+context.testSheet=sheet; let traffic=[];
+context.sbApi=(path,body)=>{traffic.push({path,body});return {state:'pending',product_id:12};};
+test('new ready row bypasses 1500 completed rows in one cycle',()=>{run('sbProcessChanges(testSheet,settings,Date.now())');assert.equal(traffic.length,1);assert.equal(sheet.field(1502,'state'),'pending');});
+sheet=fakeSheet(headers,Array.from({length:130},(_,i)=>({state:'pending',request_id:'waiting_request_'+i})));context.testSheet=sheet;properties.clear();traffic=[];
+test('pending requests rotate fairly with at most 100 operations',()=>{run('sbProcessChanges(testSheet,settings,Date.now())');assert.equal(traffic.length,100);run('sbProcessChanges(testSheet,settings,Date.now())');assert.equal(traffic[100].path,'changes/waiting_request_100');assert.equal(traffic.length,200);});
+sheet=fakeSheet(headers,[{ready:true,action:'update',product_id:12,revision:'a'.repeat(64),regular_price:'90'}]);context.testSheet=sheet;traffic=[];
+test('paused inbound leaves new ready rows queued without submitting',()=>{run('sbProcessChanges(testSheet,{...settings,inbound_paused:true},Date.now())');assert.equal(traffic.length,0);assert.equal(sheet.field(2,'ready'),true);assert.equal(sheet.field(2,'request_id'),'');});
+test('unchanged catalog generates no writes',()=>assert.equal(run('sbChangedBlocks([[1,"a"],[2,"b"]],[[1,"a"],[2,"b"]]).length'),0));
+test('adjacent catalog changes are batched',()=>assert.equal(run('JSON.stringify(sbChangedBlocks([[1],[2],[3],[4]],[[1],[20],[30],[4]]))'),'[{"start":1,"rows":[[20],[30]]}]'));
+
+// Exercise a manual ready edit through the same handler installed in Google.
+const catalogHeaders=Array.from(run('SB.catalog'));
+const catalogSheet=fakeSheet(catalogHeaders,[{id:12,name:'Fixture',sku:'0012',regular_price:'100',sale_price:'',stock_quantity:5,revision:'a'.repeat(64)}]);
+sheet=fakeSheet(headers,[{ready:false,action:'update',product_id:'Fixture | 0012 | #12',regular_price:'120'}]);context.testSheet=sheet;
+const book={getId:()=> 'test_sheet_123456789',getSheetByName:name=>name==='Catalog'?catalogSheet:sheet};
+context.LockService={getScriptLock:()=>({tryLock:()=>true,releaseLock(){}})};
+context.sbConfig=()=>({sheetId:book.getId()});
+function edit(column){context.event={source:book,range:{getSheet:()=>({...sheet,getName:()=> 'Changes'}),getRow:()=>2,getLastRow:()=>2,getColumn:()=>column,getLastColumn:()=>column}};run('onSheetEdit(event)');}
+test('picker resolves ID and captures current values and revision',()=>{edit(3);assert.equal(sheet.field(2,'product_id'),'Fixture | 0012 | #12');assert.equal(sheet.field(2,'current_sku'),'0012');assert.equal(sheet.field(2,'current_regular_price'),'100');assert.equal(sheet.field(2,'revision'),'a'.repeat(64));});
+traffic=[];
+context.sbApi=(path,body)=>{traffic.push({path,body});return path==='health'?{connector_protocol:1,settings:context.settings,capabilities:['connector_status']}:{state:'pending',product_id:12};};
+test('manual ready immediately submits for review and reports status',()=>{sheet.data[1][0]=true;edit(1);assert.equal(sheet.field(2,'state'),'pending');assert.equal(traffic.filter(x=>x.path==='changes').length,1);assert.equal(traffic.find(x=>x.path==='changes').body.product_id,12);assert.equal(traffic.at(-1).path,'connector-status');assert.equal(traffic.at(-1).body.submitted,1);});
+test('repeated ready does not create another proposal',()=>{edit(1);assert.equal(traffic.filter(x=>x.path==='changes').length,1);});
+test('technical columns remain hidden from payload',()=>assert.equal(run('SB.context.some(key => SB.fields.includes(key))'),false));
+
+const legacyHeaders=['ready','action','product_id','type','parent_id','revision',...Array.from(run('SB.fields')),...Array.from(run('SB.technical'))];
+const legacy=fakeSheet(legacyHeaders,[{ready:true,product_id:12,regular_price:'120',request_id:'existing_request_123',_payload:'{"immutable":true}'}]);
+legacy.getDeveloperMetadata=()=>[{getKey:()=> 'sheetbridge'}];
+legacy.insertColumnsAfter=(at,count)=>legacy.data.forEach(row=>row.splice(at,0,...Array(count).fill('')));
+context.migrationBook={getSheetByName:name=>name==='Changes'?legacy:null};
+test('upgrade inserts context without disturbing existing request identity or payload',()=>{run('sbMigrate(migrationBook)');assert.equal(legacy.data[1][headers.indexOf('request_id')],'existing_request_123');assert.equal(legacy.data[1][headers.indexOf('_payload')],'{"immutable":true}');assert.equal(legacy.data[1][headers.indexOf('regular_price')],'120');});
+test('upgrade is idempotent',()=>{const before=JSON.stringify(legacy.data);run('sbMigrate(migrationBook)');assert.equal(JSON.stringify(legacy.data),before);});
+test('upgrade refuses unowned tabs before changing them',()=>{legacy.getDeveloperMetadata=()=>[];assert.throws(()=>run('sbMigrate(migrationBook)'),/not owned/);});
 console.log(`All connector checks passed: ${count}`);
