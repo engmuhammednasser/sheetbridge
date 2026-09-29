@@ -144,7 +144,7 @@
     root.lang = lang; root.dir = lang === 'ar' ? 'rtl' : 'ltr';
     root.innerHTML = `<header class="sb-header"><div class="sb-brand"><div class="sb-logo" aria-hidden="true">S</div><div><h1>SheetBridge</h1><p>${esc(t('Product changes, with a clear review before publishing.'))}</p></div></div><button id="sb-language">${lang === 'ar' ? 'English' : 'العربية'}</button></header>
       <nav class="sb-tabs" aria-label="SheetBridge">${['overview', 'reviews', 'connect', 'settings'].map(name => `<button data-tab="${name}" aria-selected="${tab === name}">${esc(t(name[0].toUpperCase() + name.slice(1)))}</button>`).join('')}<a class="sb-button" href="${esc(config.guide)}" target="_blank" rel="noopener">${esc(t('Guide'))} ↗</a></nav>
-      <div id="sb-notice" hidden></div><main id="sb-content"></main><footer>SheetBridge ${esc(config.version)} · ${esc(t('Manual approval is always required. Google timing depends on its trigger service.'))}</footer>`;
+      <div id="sb-notice" hidden></div><main id="sb-content"></main><footer>SheetBridge ${esc(config.version)} · ${esc(t('Manual approval is always required. Google timing depends on its trigger service.'))}<div><bdi lang="en" dir="ltr">by muhammed nasser</bdi></div></footer>`;
     document.getElementById('sb-language').onclick = () => { lang = lang === 'ar' ? 'en' : 'ar'; render().catch(error => notice(error.message, true)); };
     root.querySelectorAll('[data-tab]').forEach(button => button.onclick = () => { tab = button.dataset.tab; detail = null; render().catch(error => notice(error.message, true)); });
   }

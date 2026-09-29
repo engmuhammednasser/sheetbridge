@@ -99,3 +99,12 @@ Migrated SheetBridge 1.0.0 from `engmuhammednasser/flexstock` at commit `e97d4fc
 | `git diff --check` | PASS for the migration changes |
 
 ZIP SHA-256 remains `7a473e483bfdb68ac04dd05f8257a3d63f5efb52424a69e080c692d67f40c5ff`. The ignored `.runtime` installation is not part of the Git repository and was not copied. Integration, concurrency, browser, live Google, and store-installation tests were not rerun during this migration; earlier results above remain historical validation.
+
+## Author attribution — 29 September 2026
+
+Released 1.0.1 with `muhammed nasser` as the WordPress plugin author and `by muhammed nasser` in the shared admin footer and bilingual user guide. The credit uses explicit English language and left-to-right direction inside the Arabic/English layouts. Updated the version, changelog, download links, and package script; the version change also refreshes the admin asset URLs.
+
+- Validation passed: 10 PHP syntax checks, admin JavaScript syntax, 37 domain checks, and 27 connector checks.
+- Packaging passed: all 17 files in `dist/sheetbridge-1.0.1.zip` match the source byte for byte; the standalone guide matches the bundled guide.
+- ZIP SHA-256: `08ff3403bd3562f458c07f2337d31cc80a60de83e22a5a3ae33a93a2e8074657`, matching `dist/SHA256SUMS.txt`.
+- `git diff --check` passed. WordPress browser, installation, integration, and live Google checks were not rerun for this attribution change.

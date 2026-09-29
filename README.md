@@ -6,17 +6,17 @@ Manage WooCommerce products through Google Sheets, with a before/after review in
 
 This is the development repository for **SheetBridge for WooCommerce**, an independent implementation for one store. The project was migrated from `engmuhammednasser/flexstock` with its Git history preserved. It does not require FlexStock or contain its plugin code. The [original Arabic research](flexstock-woocommerce-google-sheets-report-ar.md) is included as background.
 
-**Version 1.0.0 — ready for staging evaluation.** Local tests passed; live Google authorization, scheduled triggers, and compatibility with your store's extensions still require the [staging acceptance checklist](docs/testing.md#staging-acceptance-before-deployment). See the [validation record](VALIDATION.md) for what was actually tested.
+**Version 1.0.1 — ready for staging evaluation.** Local tests passed; live Google authorization, scheduled triggers, and compatibility with your store's extensions still require the [staging acceptance checklist](docs/testing.md#staging-acceptance-before-deployment). See the [validation record](VALIDATION.md) for what was actually tested.
 
 ## Downloads
 
 | File | Use |
 |---|---|
-| [Installable plugin ZIP](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/sheetbridge-1.0.0.zip) | Upload this file in WordPress |
+| [Installable plugin ZIP](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/sheetbridge-1.0.1.zip) | Upload this file in WordPress |
 | [Arabic / English user guide](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/SheetBridge-User-Guide-AR-EN.html) | Save the HTML file, then open it in your browser; switch languages or print |
 | [SHA-256 checksum](dist/SHA256SUMS.txt) | Verify the plugin download |
 
-GitHub's **Code → Download ZIP** downloads the complete development repository. For installation, use **sheetbridge-1.0.0.zip** from the link above.
+GitHub's **Code → Download ZIP** downloads the complete development repository. For installation, use **sheetbridge-1.0.1.zip** from the link above.
 
 ## Install
 

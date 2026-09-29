@@ -1,10 +1,10 @@
 /**
- * SheetBridge 1.0.0. Install in a PRIVATE STANDALONE Apps Script project.
+ * SheetBridge 1.0.1. Install in a PRIVATE STANDALONE Apps Script project.
  * Set SHOP_URL, CONNECTION_TOKEN and SPREADSHEET_ID in Project Settings > Script properties.
  * Run setup once, then syncNow. Never paste credentials into this file or a spreadsheet cell.
  */
 const SB = Object.freeze({
-  version: '1.0.0',
+  version: '1.0.1',
   fields: ['name', 'sku', 'regular_price', 'sale_price', 'stock_adjustment', 'initial_stock', 'manage_stock', 'status',
     'description', 'short_description', 'stock_status', 'backorders', 'category_ids', 'tag_ids', 'image_id', 'gallery_ids',
     'upsell_ids', 'cross_sell_ids', 'weight', 'length', 'width', 'height', 'attributes', 'variation_attributes', 'meta'],

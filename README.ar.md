@@ -6,17 +6,17 @@
 
 هذا هو مستودع تطوير **SheetBridge for WooCommerce**. نُقل المشروع من `engmuhammednasser/flexstock` مع الاحتفاظ بتاريخ تعديلات Git. الإضافة مستقلة ولا تحتاج إلى تثبيت FlexStock ولا تحتوي على كوده. [التقرير العربي الأصلي](flexstock-woocommerce-google-sheets-report-ar.md) موجود كمرجع للبحث.
 
-**الإصدار 1.0.0 متاح للتجربة على متجر تجريبي.** نجحت الاختبارات المحلية المسجلة، لكن تفويض Google وتشغيل المزامنة المجدولة فعليًا والتوافق مع إضافات متجرك ما زالت تحتاج إلى اختبار. التفاصيل في [سجل التحقق](VALIDATION.md).
+**الإصدار 1.0.1 متاح للتجربة على متجر تجريبي.** نجحت الاختبارات المحلية المسجلة، لكن تفويض Google وتشغيل المزامنة المجدولة فعليًا والتوافق مع إضافات متجرك ما زالت تحتاج إلى اختبار. التفاصيل في [سجل التحقق](VALIDATION.md).
 
 ## التحميل
 
 | الملف | استخدامه |
 |---|---|
-| [تحميل الإضافة الجاهزة للتثبيت](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/sheetbridge-1.0.0.zip) | ارفع ملف ZIP مباشرة من لوحة ووردبريس |
+| [تحميل الإضافة الجاهزة للتثبيت](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/sheetbridge-1.0.1.zip) | ارفع ملف ZIP مباشرة من لوحة ووردبريس |
 | [دليل المستخدم بالعربية والإنجليزية](https://github.com/engmuhammednasser/sheetbridge/raw/refs/heads/main/dist/SheetBridge-User-Guide-AR-EN.html) | احفظ ملف HTML وافتحه في المتصفح، ثم اختر اللغة أو اطبعه |
 | [بصمة SHA-256](dist/SHA256SUMS.txt) | للتحقق من سلامة ملف الإضافة |
 
-زر **Code → Download ZIP** ينزّل ملفات المشروع بالكامل. للتثبيت في ووردبريس استخدم ملف **sheetbridge-1.0.0.zip** من الرابط أعلاه.
+زر **Code → Download ZIP** ينزّل ملفات المشروع بالكامل. للتثبيت في ووردبريس استخدم ملف **sheetbridge-1.0.1.zip** من الرابط أعلاه.
 
 ## التثبيت والتشغيل بالخطوات
 

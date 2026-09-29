@@ -2,7 +2,7 @@
 Contributors: sheetbridge
 Requires at least: 6.5
 Requires PHP: 8.1
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,5 +32,8 @@ The WordPress database stores product snapshots and review history, plus a hash 
 Single store, human approval required, no deletion or remote image fetching. Whole-unit stock on independently managed simple products/variations. Complex third-party product types, ACF structures, multi-store inventory and vendor isolation are outside this release. Validate hosting, cache, Google authorization and extension compatibility on staging.
 
 == Changelog ==
+= 1.0.1 =
+Credit muhammed nasser in plugin metadata, all admin page footers, and the bilingual user guide.
+
 = 1.0.0 =
 Initial implementation with bilingual admin, private Google connector, review workflow, conflict checks, idempotency, stock adjustment safeguards and reversal previews.
